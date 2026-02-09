@@ -93,13 +93,37 @@ function displayDecks(decks, imagesMap) {
 }
 
 async function deleteDeck(deckId, deckName) {
-    if (!confirm(`Are you sure you want to delete the deck "${deckName}"?\n\nThis action cannot be undone.`)) {
-        return;
-    }
-    
     try {
         showLoading(true);
         
+        // 1. Verificar se há torneios vinculados a este deck
+        const tournamentsRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/tournaments?deck_id=eq.${deckId}&select=id,title`,
+            { headers }
+        );
+        
+        const tournaments = await tournamentsRes.json();
+        
+        if (tournaments && tournaments.length > 0) {
+            // Montar mensagem com detalhes dos torneios
+            let tournamentList = '';
+            tournaments.forEach((tournament, index) => {
+                tournamentList += `${index + 1}. ${tournament.title}\n`;
+            });
+            
+            const message = `Cannot delete deck "${deckName}" because it is linked to ${tournaments.length} tournament(s):\n\n${tournamentList}\n\nPlease unlink this deck from tournaments before deleting.`;
+            
+            showLoading(false);
+            alert(message);
+            return;
+        }
+        
+        // 2. Se não houver torneios, pedir confirmação
+        if (!confirm(`Are you sure you want to delete the deck "${deckName}"?\n\nThis action cannot be undone.`)) {
+            showLoading(false);
+            return;
+        }
+
         // Primeiro excluir a imagem associada
         await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, {
             method: 'DELETE',
