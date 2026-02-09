@@ -143,16 +143,16 @@ h1 {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Ordem do pódio: 2º, 1º, 3º */
-.second-place {
-    width: 280px;
-    border: 5px solid #C0C0C0; /* Prata */
+/* Ordem do pódio: 1º, 2º, 3º */
+.first-place {
+    width: 320px;
+    border: 7px solid #FFD700; /* Ouro */
     order: 1;
 }
 
-.first-place {
-    width: 320px;
-    border: 6px solid #FFD700; /* Ouro */
+.second-place {
+    width: 300px;
+    border: 6px solid #C0C0C0; /* Prata */
     order: 2;
 }
 
@@ -209,6 +209,10 @@ h1 {
     height: 480px;
 }
 
+.second-place .card-image-wrapper {
+    height: 450px;
+}
+
 .deck-card-image {
     width: 100%;
     height: 100%;
@@ -228,6 +232,10 @@ h1 {
     font-size: 1.4em;
 }
 
+.second-place .deck-card-footer {
+    font-size: 1.2em;
+}
+
 .gold-bg {
     background: linear-gradient(135deg, #FFD700, #FFC107);
     color: #333;
@@ -240,7 +248,7 @@ h1 {
 
 .bronze-bg {
     background: linear-gradient(135deg, #CD7F32, #D4A574);
-    color: #fff;
+    color: #333;
 }
 
 /* LISTA DE POSIÇÕES */
@@ -285,13 +293,13 @@ h1 {
 
 .position-number {
     font-weight: 700;
-    color: #667eea;
+    /*color: #667eea;*/
     font-size: 1em;
     min-width: 35px;
 }
 
 .position-deck {
-    font-weight: 500;
+    font-weight: bold;
     color: #333;
     flex: 1;
     text-align: right;
@@ -311,7 +319,7 @@ h1 {
 .position-item.top-3 {
     background: linear-gradient(135deg, #CD7F32, #D4A574);
     border: 2px solid #CD7F32;
-    color: white;
+    /*color: white;/*
 }
 
 .position-item.top-3 .position-number,
@@ -368,8 +376,8 @@ h1 {
         align-items: center;
     }
 
-    .second-place,
     .first-place,
+    .second-place,    
     .third-place {
         width: 100%;
         max-width: 350px;
@@ -378,6 +386,10 @@ h1 {
 
     .first-place {
         margin: 20px 0;
+    }
+
+    .second-place {
+        margin: 10px 0;
     }
 }
 
