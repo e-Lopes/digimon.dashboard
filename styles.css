@@ -111,14 +111,28 @@ h1 {
     justify-content: center;
     align-items: flex-end;
     gap: 30px;
-    margin: 40px 0;
+    margin: 60px 0 40px 0;
     padding: 20px;
+    flex: 1;
+}
+
+/* Container principal com pódio e lista lado a lado */
+.main-content {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.podium-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
 }
 
 .podium-card {
     position: relative;
     border-radius: 15px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s, box-shadow 0.3s;
     background: white;
@@ -150,8 +164,9 @@ h1 {
 
 .rank-badge {
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
     width: 50px;
     height: 50px;
     border-radius: 50%;
@@ -187,6 +202,7 @@ h1 {
     height: 420px;
     overflow: hidden;
     background: #f0f0f0;
+    border-radius: 15px 15px 0 0;
 }
 
 .first-place .card-image-wrapper {
@@ -229,33 +245,36 @@ h1 {
 
 /* LISTA DE POSIÇÕES */
 .positions-section {
-    margin-top: 50px;
+    min-width: 300px;
+    max-width: 350px;
     padding: 30px;
     background: #f8f9fa;
     border-radius: 15px;
+    height: fit-content;
+    margin-top: 60px;
 }
 
 .positions-section h2 {
     margin-bottom: 20px;
     color: #333;
-    font-size: 1.8em;
+    font-size: 1.5em;
     text-align: center;
 }
 
 .positions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .position-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 12px 18px;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -267,8 +286,8 @@ h1 {
 .position-number {
     font-weight: 700;
     color: #667eea;
-    font-size: 1.1em;
-    min-width: 30px;
+    font-size: 1em;
+    min-width: 35px;
 }
 
 .position-deck {
@@ -330,6 +349,19 @@ h1 {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .positions-section {
+        width: 100%;
+        max-width: 600px;
+        margin-top: 30px;
+    }
+}
+
 @media (max-width: 1024px) {
     .podium-container {
         flex-direction: column;
@@ -362,8 +394,8 @@ h1 {
         font-size: 2em;
     }
 
-    .positions-grid {
-        grid-template-columns: 1fr;
+    .positions-section {
+        max-width: 100%;
     }
 }
 
