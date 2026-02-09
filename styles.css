@@ -27,6 +27,10 @@ header {
     border-bottom: 3px solid #667eea;
 }
 
+header .nav-button {
+    margin: 5px;
+}
+
 h1 {
     font-size: 2.5em;
     color: #333;
@@ -36,6 +40,7 @@ h1 {
 .subtitle {
     color: #666;
     font-size: 1.1em;
+    margin-bottom: 15px;
 }
 
 .filters {
@@ -106,10 +111,6 @@ h1 {
 }
 
 /* PÓDIO */
-.podium-card {
-    display: none;
-}
-
 .podium-container {
     display: flex;
     justify-content: center;
@@ -147,17 +148,17 @@ h1 {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
 
-/* Ordem do pódio: 1º, 2º, 3º */
-.first-place {
-    width: 320px;
-    border: 7px solid #FFD700; /* Ouro */
-    order: 1;
+/* Ordem do pódio: 2º, 1º, 3º */
+.second-place {
+    width: 280px;
+    border: 5px solid #C0C0C0; /* Prata */
+    order: 2;
 }
 
-.second-place {
-    width: 300px;
-    border: 6px solid #C0C0C0; /* Prata */
-    order: 2;
+.first-place {
+    width: 320px;
+    border: 6px solid #FFD700; /* Ouro */
+    order: 1;
 }
 
 .third-place {
@@ -213,10 +214,6 @@ h1 {
     height: 480px;
 }
 
-.second-place .card-image-wrapper {
-    height: 450px;
-}
-
 .deck-card-image {
     width: 100%;
     height: 100%;
@@ -236,10 +233,6 @@ h1 {
     font-size: 1.4em;
 }
 
-.second-place .deck-card-footer {
-    font-size: 1.2em;
-}
-
 .gold-bg {
     background: linear-gradient(135deg, #FFD700, #FFC107);
     color: #333;
@@ -252,7 +245,7 @@ h1 {
 
 .bronze-bg {
     background: linear-gradient(135deg, #CD7F32, #D4A574);
-    color: #333;
+    color: #fff;
 }
 
 /* LISTA DE POSIÇÕES */
@@ -297,13 +290,13 @@ h1 {
 
 .position-number {
     font-weight: 700;
-    /*color: #667eea;*/
+    color: #667eea;
     font-size: 1em;
     min-width: 35px;
 }
 
 .position-deck {
-    font-weight: bold;
+    font-weight: 500;
     color: #333;
     flex: 1;
     text-align: right;
@@ -323,7 +316,7 @@ h1 {
 .position-item.top-3 {
     background: linear-gradient(135deg, #CD7F32, #D4A574);
     border: 2px solid #CD7F32;
-    /*color: white;/*
+    color: white;
 }
 
 .position-item.top-3 .position-number,
@@ -378,6 +371,7 @@ h1 {
     .podium-container {
         flex-direction: column;
         align-items: center;
+        gap: 20px;
     }
 
     .first-place,
@@ -389,10 +383,14 @@ h1 {
     }
 
     .first-place {
-        margin: 20px 0;
+        margin: 10px 0;
     }
 
     .second-place {
+        margin: 10px 0;
+    }
+
+    .third-place {
         margin: 10px 0;
     }
 }
@@ -400,106 +398,203 @@ h1 {
 @media (max-width: 768px) {
     .filters {
         grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px;
     }
 
     .container {
         padding: 15px;
+        border-radius: 15px;
     }
 
     h1 {
-        font-size: 2em;
+        font-size: 1.8em;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+    }
+
+    /* Ajustar botões do header */
+    header .nav-button {
+        display: block !important;
+        width: 100%;
+        margin: 8px 0 !important;
+        text-align: center;
+        padding: 10px 15px !important;
+    }
+
+    header .nav-button span:first-child {
+        display: inline; /* Manter ícones */
+    }
+
+    /* Esconder separador */
+    header span[style*="color: #ccc"] {
+        display: none;
     }
 
     .positions-section {
         max-width: 100%;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .positions-section h2 {
+        font-size: 1.3em;
+    }
+
+    /* Ajustar cards do pódio */
+    .podium-container {
+        margin: 30px 0 20px 0;
+        padding: 10px;
+    }
+
+    .first-place,
+    .second-place,
+    .third-place {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .card-image-wrapper {
+        height: 350px !important;
+    }
+
+    .first-place .card-image-wrapper {
+        height: 380px !important;
+    }
+
+    .second-place .card-image-wrapper {
+        height: 360px !important;
+    }
+
+    .deck-card-footer {
+        font-size: 1em !important;
+        padding: 15px !important;
+    }
+
+    .first-place .deck-card-footer {
+        font-size: 1.2em !important;
     }
 }
 
 @media (max-width: 480px) {
     body {
+        padding: 5px;
+    }
+
+    .container {
         padding: 10px;
+        border-radius: 10px;
     }
 
     h1 {
         font-size: 1.5em;
     }
 
+    .subtitle {
+        font-size: 0.8em;
+    }
+
+    header {
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .filters {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .filter-group select {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    .total-players {
+        padding: 10px 20px;
+    }
+
+    .total-players label {
+        font-size: 0.75em;
+    }
+
+    .total-number {
+        font-size: 1.5em;
+    }
+
     .podium-card {
         max-width: 100%;
     }
-}
 
-/* Adicione ao final do seu styles.css */
-.tournament-info {
-    margin-top: 10px;
-    text-align: center;
-}
-
-.tournament-date {
-    font-size: 1.1em;
-    color: #667eea;
-    font-weight: 600;
-    padding: 8px 15px;
-    background: #f0f4ff;
-    border-radius: 8px;
-    display: inline-block;
-    margin-top: 5px;
-}
-
-/* Ajuste no filtro de data para mostrar data formatada */
-#dateFilter option {
-    font-size: 0.95em;
-}
-
-/* Ajuste responsivo */
-@media (max-width: 768px) {
-    .tournament-date {
-        font-size: 1em;
-        padding: 6px 12px;
+    .card-image-wrapper {
+        height: 300px !important;
     }
-}
 
-/* Melhorar exibição de imagens .webp */
-.deck-card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s ease;
-}
+    .first-place .card-image-wrapper {
+        height: 320px !important;
+    }
 
-/* Efeito de zoom suave ao passar mouse */
-.podium-card:hover .deck-card-image {
-    transform: scale(1.05);
-}
+    .second-place .card-image-wrapper {
+        height: 310px !important;
+    }
 
-/* Garantir que imagens .webp carreguem corretamente */
-.card-image-wrapper {
-    width: 100%;
-    height: 420px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-size: cover;
-    background-position: center;
-    border-radius: 15px 15px 0 0;
-    position: relative;
-}
+    .rank-badge {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+        top: -20px;
+    }
 
-/* Fallback visual enquanto imagem carrega */
-.card-image-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-    z-index: 1;
-}
+    .first-place,
+    .second-place,
+    .third-place {
+        border-width: 4px;
+    }
 
-.deck-card-image {
-    position: relative;
-    z-index: 2;
-}
+    .first-place {
+        border-width: 5px;
+    }
 
+    .deck-card-footer {
+        padding: 12px !important;
+        font-size: 0.95em !important;
+    }
+
+    .first-place .deck-card-footer {
+        font-size: 1.1em !important;
+    }
+
+    .positions-section {
+        padding: 15px;
+    }
+
+    .positions-section h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+    }
+
+    .position-item {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+
+    .position-number {
+        font-size: 0.9em;
+        min-width: 30px;
+    }
+
+    .position-deck {
+        font-size: 0.9em;
+    }
+
+    .podium-container {
+        margin: 20px 0 15px 0;
+        padding: 5px;
+        gap: 15px;
+    }
+
+    .main-content {
+        gap: 20px;
+    }
 }

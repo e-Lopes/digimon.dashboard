@@ -11,6 +11,7 @@ let currentStore = '';
 let currentDate = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
+    clearDisplay(); // ✅ ESCONDER CARDS VAZIOS AO CARREGAR
     await loadStores();
     setupEventListeners();
 });
@@ -139,13 +140,10 @@ async function displayTournament() {
         const deckIds = [...new Set(results.map(r => r.deck_id).filter(id => id))];
         console.log("Deck IDs encontrados:", deckIds);
         
-        // TERCEIRO: Buscar informações dos decks E suas imagens EM UMA SÓ CONSULTA
+        // TERCEIRO: Buscar informações dos decks E suas imagens
         let decksMap = {};
         if (deckIds.length > 0) {
-            // Buscar decks com JOIN nas imagens (usando RPC ou consulta direta)
-            // Primeiro tentamos com uma consulta que faz o JOIN
             try {
-                // Método 1: Buscar decks e imagens separadamente e combinar
                 const decksRes = await fetch(
                     `${SUPABASE_URL}/rest/v1/decks?id=in.(${deckIds.join(',')})&select=id,name`, 
                     { headers }
@@ -166,8 +164,6 @@ async function displayTournament() {
                         const images = await imagesRes.json();
                         console.log("Imagens encontradas:", images);
                         
-                        // Criar mapa de deck_id -> image_url
-                        // Nota: um deck pode ter múltiplas imagens, pega a primeira
                         images.forEach(img => {
                             if (!imagesMap[img.deck_id]) {
                                 imagesMap[img.deck_id] = img.image_url;
@@ -175,7 +171,6 @@ async function displayTournament() {
                         });
                     }
                     
-                    // Combinar dados: nome do deck + imagem
                     decks.forEach(deck => {
                         decksMap[deck.id] = {
                             name: deck.name,
@@ -195,7 +190,6 @@ async function displayTournament() {
             const deckInfo = decksMap[result.deck_id];
             
             if (!deckInfo) {
-                // Se não encontrou o deck, mostrar apenas o ID
                 return {
                     ...result,
                     deck: { 
@@ -237,17 +231,14 @@ async function displayTournament() {
 function formatAndDisplayDate(dateString) {
     const date = new Date(dateString);
     
-    // Formatar em português
     const formattedDate = date.toLocaleDateString('pt-BR', {
         day: '2-digit',
-        month: 'long', // "fevereiro"
+        month: 'long',
         year: 'numeric'
     });
     
-    // Capitalizar primeira letra
     const finalDate = formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
     
-    // Atualizar o select com a data formatada
     const dateSelect = document.getElementById('dateFilter');
     const selectedOption = dateSelect.options[dateSelect.selectedIndex];
     if (selectedOption) {
@@ -264,28 +255,21 @@ function displayPodium(topThree) {
     
     positions.forEach((pos, index) => {
         const card = document.getElementById(pos.id);
-        const entry = topThree[index];
+        const entry = topThree.find(e => e.placement === pos.placement); // ✅ BUSCAR POR PLACEMENT
         
         if (entry && entry.deck) {
             const img = card.querySelector('.deck-card-image');
             const name = card.querySelector('.deck-name');
             
-            console.log(`Exibindo deck ${index + 1}:`, entry.deck);
+            console.log(`Exibindo deck ${pos.placement}º:`, entry.deck);
             
-            // Configurar imagem
             let imageUrl = entry.deck.image_url;
             
-            // Se não tiver imagem URL, usar placeholder
             if (!imageUrl) {
                 imageUrl = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
-            } 
-            // Se a URL for .webp, usar diretamente (não precisa converter)
-            else if (imageUrl.endsWith('.webp')) {
-                // URL já está correta para .webp
+            } else if (imageUrl.endsWith('.webp')) {
                 imageUrl = imageUrl;
-            }
-            // Se a URL for relativa, tentar corrigir
-            else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
+            } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
                 if (imageUrl.startsWith('/')) {
                     imageUrl = `https://vllqakohumoinpdwnsqa.supabase.co/storage/v1/object/public${imageUrl}`;
                 } else {
@@ -295,19 +279,15 @@ function displayPodium(topThree) {
             
             console.log(`URL da imagem para ${entry.deck.name}:`, imageUrl);
             
-            // Configurar a imagem
             img.src = imageUrl;
             img.alt = entry.deck.name;
             
-            // Tratar erro na imagem (especialmente para .webp)
             img.onerror = () => {
-                console.log(`Error loading .webp image: ${imageUrl}`);
-                // Tentar fallback para .jpg se for .webp
+                console.log(`Error loading image: ${imageUrl}`);
                 if (imageUrl.endsWith('.webp')) {
                     const jpgUrl = imageUrl.replace('.webp', '.jpg');
                     img.src = jpgUrl;
                     
-                    // Se também falhar o .jpg, usar placeholder
                     img.onerror = () => {
                         img.src = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
                     };
@@ -316,10 +296,8 @@ function displayPodium(topThree) {
                 }
             };
             
-            // Configurar nome
             name.textContent = entry.deck.name;
             
-            // Adicionar link se houver decklist
             if (entry.decklist_link) {
                 card.style.cursor = 'pointer';
                 card.onclick = () => window.open(entry.decklist_link, '_blank');
@@ -328,10 +306,10 @@ function displayPodium(topThree) {
                 card.onclick = null;
             }
             
-            card.style.display = 'block';
+            card.style.display = 'block'; // ✅ MOSTRAR o card
         } else {
             console.log(`Sem dados para posição ${pos.placement}`);
-            card.style.display = 'none';
+            card.style.display = 'none'; // ✅ ESCONDER se não tem dados
         }
     });
 }
@@ -346,7 +324,6 @@ function displayPositions(results) {
         const div = document.createElement('div');
         div.className = 'position-item';
         
-        // Destacar top 3
         if (entry.placement === 1) div.classList.add('top-1');
         if (entry.placement === 2) div.classList.add('top-2');
         if (entry.placement === 3) div.classList.add('top-3');
@@ -356,7 +333,6 @@ function displayPositions(results) {
             <span class="position-deck">${entry.deck.name}</span>
         `;
         
-        // Adicionar link se disponível
         if (entry.decklist_link) {
             div.style.cursor = 'pointer';
             div.onclick = () => window.open(entry.decklist_link, '_blank');
@@ -369,12 +345,17 @@ function displayPositions(results) {
 function clearDisplay() {
     document.getElementById('totalPlayers').textContent = '-';
     
-    // Limpar pódio
+    // Limpar e ESCONDER pódio
     ['firstPlace', 'secondPlace', 'thirdPlace'].forEach(id => {
         const card = document.getElementById(id);
-        card.querySelector('.deck-card-image').src = '';
-        card.querySelector('.deck-name').textContent = '-';
-        card.style.display = 'none';
+        const img = card.querySelector('.deck-card-image');
+        const name = card.querySelector('.deck-name');
+        
+        img.src = '';
+        img.alt = '';
+        name.textContent = '-';
+        card.style.display = 'none'; // ✅ ESCONDER o card
+        card.onclick = null;
     });
     
     // Limpar lista
