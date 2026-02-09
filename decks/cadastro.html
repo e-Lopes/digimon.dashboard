@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Deck - Digimon TCG</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .page-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .page-subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #eaeaea;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95em;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-input::placeholder {
+            color: #999;
+        }
+        
+        .form-help {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .form-help a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .form-help a:hover {
+            text-decoration: underline;
+        }
+        
+        .image-preview-container {
+            margin-top: 15px;
+        }
+        
+        .image-preview {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #eaeaea;
+            max-width: 300px;
+            display: none;
+            margin-bottom: 10px;
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .image-preview.active {
+            display: block;
+        }
+        
+        .image-url-display {
+            font-size: 0.85em;
+            color: #666;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            word-break: break-all;
+            display: none;
+        }
+        
+        .image-url-display.active {
+            display: block;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .code-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .code-example {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .code-example:hover {
+            background: #e0e7ff;
+        }
+        
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 15px;
+            }
+            
+            .form-card {
+                padding: 20px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .code-examples {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="page-header">
+                <h1 class="page-title">🃏 Create New Deck</h1>
+                <p class="page-subtitle">Add a new deck to the system</p>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            
+            <div class="form-card">
+                <form id="deckForm">
+                    <div class="form-group">
+                        <label for="deckName" class="form-label">Deck Name*</label>
+                        <input 
+                            type="text" 
+                            id="deckName" 
+                            class="form-input" 
+                            placeholder="Ex: Jesmon, Magnamon, Omnimon"
+                            required
+                        >
+                        <span class="form-help">Use the name of the Digimon you want to use as a cover</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deckCode" class="form-label">Card Code*</label>
+                        <input 
+                            type="text" 
+                            id="deckCode" 
+                            class="form-input" 
+                            placeholder="Ex: BT24-030, ST22-05, EX5-001"
+                            required
+                            maxlength="20"
+                            style="text-transform: uppercase;"
+                        >
+                        <span class="form-help">
+                            Code of the deck's main card (format: SET-NUMBER)
+                        </span>
+                        
+                        <div class="code-examples">
+                            <div class="code-example" onclick="document.getElementById('deckCode').value = 'BT24-030'">BT24-030</div>
+                            <div class="code-example" onclick="document.getElementById('deckCode').value = 'ST22-05'">ST22-05</div>
+                            <div class="code-example" onclick="document.getElementById('deckCode').value = 'EX5-001'">EX5-001</div>
+                        </div>
+                        
+                        <div class="image-preview-container">
+                            <div class="image-preview" id="imagePreview">
+                                <img id="previewImage" src="" alt="Pré-visualização">
+                            </div>
+                            <div class="image-url-display" id="imageUrlDisplay">
+                                <strong>URL gerada:</strong> <span id="generatedUrl"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            Save Deck
+                        </button>
+                        <a href="index.html" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Saving deck...</p>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <h3 style="color: #333; margin-bottom: 10px;">💡 How to find the card code:</h3>
+                <ul style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+                    <li>The code follows the format: <strong>SET-NUMBER</strong></li>
+                    <li><strong>SET</strong>: BT16, ST22, EX5...</li>
+                    <li><strong>NUMBER</strong>: 001 - 120 (generally with 3 digits, ST with 2)</li>
+                    <li>Examples: BT24-030, ST22-05, EX5-001</li>
+                </ul>                
+            </div>
+            
+            <div class="navigation-buttons" style="margin-top: 30px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+    
+    <a href="index.html" class="nav-button" style="display: inline-flex; align-items: center; gap: 8px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s;">
+        <span>←</span>
+        <span>Back to Decks</span>
+    </a>
+    
+    <a href="../index.html" class="nav-button" style="display: inline-flex; align-items: center; gap: 8px; color: #667eea; background: white; text-decoration: none; font-weight: 600; padding: 12px 20px; border: 2px solid #667eea; border-radius: 8px; transition: all 0.2s;">
+        <span>Main Dashboard</span>
+    </a>
+</div>
+
+<style>
+    .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+</style>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

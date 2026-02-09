@@ -1,0 +1,61 @@
+/* Container de inputs para alinhar tudo */
+.form-group select,
+.form-group input[type="date"],
+.form-group input[type="number"] {
+    display: block;
+    width: 100%;
+    height: 48px; /* Altura um pouco maior para toque/clique fácil */
+    padding: 10px 12px;
+    font-size: 16px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    color: #333;
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    box-sizing: border-box; /* Garante que o padding não aumente o tamanho final */
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none; /* Remove estilo iOS */
+    -moz-appearance: none;    /* Remove estilo Firefox */
+    appearance: none;         /* Estilo padrão moderno */
+}
+
+/* Ajuste específico para o campo de Data (Ícone e Espaçamento) */
+.form-group input[type="date"] {
+    position: relative;
+    min-height: 48px;
+}
+
+/* Força o campo de data a mostrar o placeholder corretamente no Chrome */
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 5px;
+    filter: invert(0.5); /* Deixa o ícone do calendário cinza discreto */
+}
+
+/* Ajuste para o campo de Número (Total Players) */
+.form-group input[type="number"] {
+    -moz-appearance: textfield; /* Remove as setinhas no Firefox */
+}
+
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Remove as setinhas no Chrome/Edge */
+    margin: 0;
+}
+
+/* Estado de Foco (Highlighter azul) */
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+    background-color: #fff;
+}
+
+/* Estilo para quando o campo está desabilitado */
+.form-group select:disabled,
+.form-group input:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
+    cursor: not-allowed;
+}

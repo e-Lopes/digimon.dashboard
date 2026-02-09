@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Decks - Digimon TCG</title>
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .decks-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .page-title {
+            font-size: 2em;
+            color: #333;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .decks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .deck-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #eaeaea;
+        }
+        
+        .deck-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .deck-image-container {
+            height: 200px;
+            overflow: hidden;
+            background: #f5f5f5;
+            position: relative;
+        }
+        
+        .deck-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .deck-card:hover .deck-image {
+            transform: scale(1.05);
+        }
+        
+        .deck-info {
+            padding: 20px;
+        }
+        
+        .deck-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+        
+        .deck-code {
+            font-size: 0.9em;
+            color: #666;
+            background: #f8f9fa;
+            padding: 6px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
+        .deck-url {
+            font-size: 0.85em;
+            color: #888;
+            word-break: break-all;
+            margin-bottom: 15px;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }
+        
+        .deck-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .btn-danger:hover {
+            background: #ffcdd2;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            grid-column: 1 / -1;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 0;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-input::placeholder {
+            color: #999;
+        }
+        
+        @media (max-width: 768px) {
+            .decks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .btn-primary {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .deck-actions {
+                flex-direction: column;
+            }
+            
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .decks-container {
+                padding: 10px;
+            }
+            
+            .deck-card {
+                margin-bottom: 15px;
+            }
+            
+            .page-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="decks-container">
+            <div class="page-header">
+                <h1 class="page-title">Edit Decks</h1>
+                <a href="cadastro.html" class="btn-primary">+ New Deck</a>
+            </div>
+            
+            <div class="stats-bar" id="statsBar" style="display: none;">
+                <div class="stat-item">
+                    <span class="stat-number" id="totalDecks">0</span>
+                    <span class="stat-label">Decks</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="decksWithImages">0</span>
+                    <span class="stat-label">With Images</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="decksWithoutImages">0</span>
+                    <span class="stat-label">Without Images</span>
+                </div>
+            </div>
+            
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Search decks by name..."
+                >
+            </div>
+            
+            <div id="decksList" class="decks-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando decks...</p>
+                </div>
+            </div>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🃏</div>
+                <h3>Nenhum deck cadastrado</h3>
+                <p>Comece cadastrando seu primeiro deck!</p>
+                <a href="cadastro.html" class="btn-primary" style="margin-top: 20px;">Cadastrar Primeiro Deck</a>
+            </div>
+            
+            <div id="noResults" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">🔍</div>
+                <h3>Nenhum deck encontrado</h3>
+                <p>Tente buscar com outros termos.</p>
+                <button onclick="clearSearch()" class="btn-secondary" style="margin-top: 20px;">Limpar busca</button>
+            </div>
+            
+        <a href="../index.html" class="nav-button" style="display: inline-flex; align-items: center; gap: 8px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s;">
+        <span>←</span>
+        <span>Main Dashboard</span>
+        </a>
+            
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
+
+        const headers = {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+        };
+
+        let allDecks = [];
+        let imagesMap = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDecks();
+            setupSearch();
+        });
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                filterDecks(searchTerm);
+            });
+        }
+
+        function filterDecks(searchTerm) {
+            if (!searchTerm) {
+                displayDecks(allDecks, imagesMap);
+                return;
+            }
+
+            const filtered = allDecks.filter(deck => 
+                deck.name.toLowerCase().includes(searchTerm)
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('decksList').style.display = 'none';
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('statsBar').style.display = 'none';
+            } else {
+                document.getElementById('noResults').style.display = 'none';
+                displayDecks(filtered, imagesMap, true);
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            filterDecks('');
+        }
+
+        async function loadDecks() {
+            try {
+                showLoading(true);
+                
+                // Buscar decks com suas imagens
+                const decksRes = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=*&order=name.asc`, { headers });
+                if (!decksRes.ok) throw new Error('Error loading decks');
+                
+                allDecks = await decksRes.json();
+                
+                // Buscar imagens separadamente
+                const imagesRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images?select=deck_id,image_url`, { headers });
+                
+                if (imagesRes.ok) {
+                    const images = await imagesRes.json();
+                    images.forEach(img => {
+                        imagesMap[img.deck_id] = img.image_url;
+                    });
+                }
+                
+                displayDecks(allDecks, imagesMap);
+                updateStats(allDecks, imagesMap);
+                showLoading(false);
+                
+            } catch (error) {
+                console.error('Error loading decks:', error);
+                showError('Error loading decks. Try again.');
+                showLoading(false);
+            }
+        }
+
+        function displayDecks(decks, imagesMap, isFiltered = false) {
+            const container = document.getElementById('decksList');
+            const emptyState = document.getElementById('emptyState');
+            const noResults = document.getElementById('noResults');
+            const statsBar = document.getElementById('statsBar');
+            
+            if (!decks || decks.length === 0) {
+                if (isFiltered) {
+                    container.style.display = 'none';
+                    emptyState.style.display = 'none';
+                    noResults.style.display = 'block';
+                    statsBar.style.display = 'none';
+                } else {
+                    container.style.display = 'none';
+                    emptyState.style.display = 'block';
+                    noResults.style.display = 'none';
+                    statsBar.style.display = 'none';
+                }
+                return;
+            }
+            
+            container.innerHTML = '';
+            container.style.display = 'grid';
+            emptyState.style.display = 'none';
+            noResults.style.display = 'none';
+            statsBar.style.display = 'flex';
+            
+            decks.forEach(deck => {
+                const imageUrl = imagesMap[deck.id];
+                const deckCode = extractCodeFromUrl(imageUrl);
+                
+                const deckCard = document.createElement('div');
+                deckCard.className = 'deck-card';
+                deckCard.innerHTML = `
+                    <div class="deck-image-container">
+                        <img src="${imageUrl || 'https://via.placeholder.com/300x200/667eea/ffffff?text=' + encodeURIComponent(deck.name.substring(0, 15))}" 
+                             alt="${deck.name}" 
+                             class="deck-image" 
+                             onerror="this.onerror=null; this.src='https://via.placeholder.com/300x200/667eea/ffffff?text=${encodeURIComponent(deck.name.substring(0, 15))}'">
+                        ${!imageUrl ? '<div style="position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.7); color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em;">Sem imagem</div>' : ''}
+                    </div>
+                    <div class="deck-info">
+                        <h3 class="deck-name">${deck.name}</h3>
+                        ${deckCode ? `<div class="deck-code">${deckCode}</div>` : ''}
+                        ${imageUrl ? `<div class="deck-url" title="${imageUrl}">${imageUrl}</div>` : '<div class="deck-url">URL da imagem não configurada</div>'}
+                        <div class="deck-actions">
+                            <button class="btn-secondary" onclick="editDeck('${deck.id}')">Edit</button>
+                            <button class="btn-secondary btn-danger" onclick="deleteDeck('${deck.id}', '${deck.name}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(deckCard);
+            });
+        }
+
+        function updateStats(decks, imagesMap) {
+            const totalDecks = decks.length;
+            const decksWithImages = decks.filter(deck => imagesMap[deck.id]).length;
+            const decksWithoutImages = totalDecks - decksWithImages;
+            
+            document.getElementById('totalDecks').textContent = totalDecks;
+            document.getElementById('decksWithImages').textContent = decksWithImages;
+            document.getElementById('decksWithoutImages').textContent = decksWithoutImages;
+        }
+
+        function extractCodeFromUrl(url) {
+            if (!url) return null;
+            const match = url.match(/\/([A-Z0-9-]+)\.webp$/);
+            return match ? match[1] : null;
+        }
+
+        async function deleteDeck(deckId, deckName) {
+            if (!confirm(`Are you sure you want to delete the deck "${deckName}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                showLoading(true);
+                
+                // Primeiro excluir a imagem associada
+                await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+                
+                // Depois excluir o deck
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/decks?id=eq.${deckId}`, {
+                    method: 'DELETE',
+                    headers: headers
+                });
+                
+                if (res.ok) {
+                    alert('Successfully deleted deck!');
+                    loadDecks(); // Recarregar a lista
+                } else {
+                    throw new Error('Error deleting deck');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting deck:', error);
+                alert('Error deleting deck. Check if there are no tournaments using this deck.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function editDeck(deckId) {
+            window.location.href = `cadastro.html?edit=${deckId}`;
+        }
+
+        function showLoading(show) {
+            const loadingElement = document.querySelector('.loading');
+            if (loadingElement) {
+                loadingElement.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>
