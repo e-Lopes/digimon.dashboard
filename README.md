@@ -40,13 +40,7 @@ The database schema is documented in /database/schema.sql
 
 ## 💻 Known Bugs & Future Improvements:
 
-[BUG] Antes de tentar criar um deck verificar se ja tem algum cadastrado com o mesmo nome
-
-[Bug] Editar um deck para ter o mesmo nome de um outro que ja existe e clicar em salvar da erro/retorna para a pagina anterior
-
-[Feature]Add validação para não ter mais de um torneio da mesma loja no mesmo dia
-
-[Feature]Poder editar um Registro de torneio que ja aconteceu
+[BUG] Editar um Registro de torneio que ja aconteceu e salvar faz criar um novo registro para cada deck no banco de dados
 
 [Feature]Add cadastro de loja
 
