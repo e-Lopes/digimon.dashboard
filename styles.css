@@ -363,13 +363,50 @@ h1 {
 
 .position-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 18px;
-    background: white;
+    padding: 12px 15px;
+    background: #f8f9fa;
     border-radius: 10px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
-    transition: 0.2s;
+    margin-bottom: 8px;
+    gap: 15px;
+    border: 1px solid #eee;
+}
+
+.position-info {
+    display: flex;
+    flex-direction: column; /* Coloca o nome do deck em cima e o player embaixo */
+    flex-grow: 1;
+    min-width: 0; /* Permite que o texto use reticências se for longo */
+}
+
+.deck-name-text {
+    font-weight: 700;
+    color: #333;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-name-text {
+    font-size: 0.85rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.position-rank {
+    background: #667eea;
+    color: white;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    flex-shrink: 0;
 }
 
 /* Hover normal */

@@ -1,167 +1,223 @@
-:root {
-    --primary: #667eea;
-    --secondary: #764ba2;
-    --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+/* Reset e Base - Seguindo o padrão do Torneio */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    background: var(--bg-gradient);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    margin: 0;
     padding: 20px;
-    font-family: 'Segoe UI', sans-serif;
     display: flex;
     justify-content: center;
 }
 
 .container {
-    background: #fff;
     width: 100%;
     max-width: 850px;
+    background: white;
     border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     padding: 30px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-    /* Ajuste para remover o espaço grande no fundo */
-    min-height: auto; 
     align-self: flex-start;
 }
 
+/* --- BOTÃO BACK (Corrigido para não vazar) --- */
+.nav-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-bottom: 25px;
+    width: fit-content;
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* --- HEADER --- */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #f0f0f0;
-    margin-bottom: 20px;
+    border-bottom: 3px solid #667eea;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
 }
 
-.nav-button {
-    text-decoration: none;
-    color: var(--primary);
-    font-weight: 600;
-    margin-bottom: 10px;
-    display: inline-block;
+.page-title { 
+    margin: 0; 
+    font-size: 2rem; 
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-/* Form Row - Alinhamento Perfeito */
+.stats-counter {
+    background: #f0f4ff;
+    color: #667eea;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* --- FORMULÁRIO (Altura maior e centralizado) --- */
 .quick-add-section {
     background: #f8f9fa;
-    padding: 20px;
+    padding: 25px;
     border-radius: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .form-row {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
 }
 
 input[type="text"], .btn-primary, .btn-cancel {
-    height: 45px;
+    height: 56px; /* Altura maior conforme solicitado */
+    font-size: 1.05rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
-    font-size: 1rem;
 }
 
 input[type="text"] {
     flex: 1;
-    padding: 0 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    padding: 0 18px;
+    border: 2px solid #ced4da;
     outline: none;
+    background: white;
+}
+
+input[type="text"]:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
 .btn-primary {
-    background: var(--bg-gradient);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 0 20px;
-    border-radius: 8px;
-    font-weight: 600;
+    padding: 0 30px;
+    font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
+    line-height: 1; /* Garante centralização da fonte */
 }
 
 .btn-cancel {
     background: #e9ecef;
     color: #495057;
     border: 1px solid #ced4da;
-    padding: 0 15px;
-    border-radius: 8px;
+    padding: 0 20px;
     font-weight: 600;
     cursor: pointer;
     display: none; /* Controlado pelo JS */
-    align-items: center;
-    justify-content: center;
-}
-
-/* Busca */
-.search-input {
-    width: 100%;
-    height: 45px;
-    padding: 0 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-sizing: border-box;
-}
-
-/* Lista e Itens */
-.player-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 20px;
-    border: 1px solid #eee;
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-.btn-action {
-    background: #f1f3f5;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-/* Paginação colada na lista */
-.pagination-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 10px;
-    padding-top: 15px;
-    border-top: 1px solid #eee;
 }
 
 .btn-pagination {
     padding: 8px 16px;
     border: 1px solid var(--primary);
-    background: transparent;
-    color: var(--primary);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border-radius: 6px;
     cursor: pointer;
 }
-
 .btn-pagination:disabled {
-    border-color: #ddd;
-    color: #999;
+    cursor: not-allowed;
+    opacity: 0.4;             /* Deixa o botão bem opaco/transparente */
+    filter: grayscale(0.5);   /* Opcional: tira um pouco da vibração da cor */
+    box-shadow: none;         /* Remove sombras se houver */
 }
 
-/* Toasts */
-#toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; }
-.toast {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    margin-bottom: 10px;
-    border-left: 5px solid var(--primary);
-    display: flex;
-    gap: 10px;
-    animation: slideIn 0.3s ease-out;
+/* --- BUSCA --- */
+.search-input {
+    width: 100%;
+    height: 52px;
+    padding: 0 18px;
+    border: 2px solid #eee;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1rem;
 }
-@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+/* --- LISTA --- */
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    background: white;
+    transition: 0.2s;
+    gap:15px;
+    flex-wrap: nowrap;
+}
+
+
+
+.player-item:hover {
+    border-color: #667eea;
+    background: #fcfcff;
+}
+
+.btn-action {
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.player-actions {
+    display: flex;
+    flex-direction: row; /* Garante que fiquem na horizontal */
+    gap: 8px;           /* Espaço entre um botão e outro */
+    flex-shrink: 0;      /* Impede que os botões "esmaguem" se o nome for longo */
+}
+
+/* --- PAGINAÇÃO --- */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
+}
+
+/* Ajuste Mobile */
+@media (max-width: 600px) {
+    .player-item {
+        padding: 12px 15px;
+    }
+    
+    .btn-action {
+        padding: 8px 10px; /* Reduz um pouco o preenchimento no mobile */
+        font-size: 0.85rem;
+    }
+}

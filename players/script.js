@@ -77,7 +77,7 @@ function renderPaginatedList() {
         item.className = 'player-item';
         item.innerHTML = `
             <span><strong>${p.name}</strong></span>
-            <div>
+            <div class="player-actions">
                 <button class="btn-action" onclick="editPlayer('${p.id}', '${p.name.replace(/'/g, "\\'")}')">✏️ Edit</button>
                 <button class="btn-action" onclick="deletePlayer('${p.id}', '${p.name.replace(/'/g, "\\'")}')">🗑️</button>
             </div>
