@@ -17,31 +17,36 @@ body {
     padding: 20px;
 }
 
-/* Container para garantir a centralização */
+/* Container do logo */
 .logo-wrapper {
     display: flex;
     justify-content: center;
     margin-bottom: 10px;
-    padding: 0 20px; /* Evita que o logo encoste nas bordas do celular */
+    width: 100%;
 }
 
-/* Controle responsivo da imagem */
+/* Controle da imagem */
 .header-logo {
-    width: 100%;       /* Permite que ela diminua em telas pequenas */
-    max-width: 180px;  /* Define o tamanho máximo ideal para não ficar gigante */
-    height: auto;      /* Mantém a proporção e evita achatar a imagem */
     display: block;
+    height: auto; /* Mantém a proporção sempre */
+    
+    /* No Desktop: tamanho fixo controlado */
+    width: 180px; 
+    
     filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
 }
 
-/* Ajuste específico para Mobile (telas menores que 768px) */
+/* Ajuste específico para Celular */
 @media (max-width: 768px) {
     .header-logo {
-        max-width: 140px; /* No celular ela fica um pouco menor para dar espaço ao conteúdo */
+        /* No celular, ela ocupará no máximo 35% da largura da tela */
+        /* Isso garante que nunca fique "gigante" idependente do arquivo original */
+        width: 35vw; 
+        max-width: 120px; /* Trava extra para telas grandes de celular */
     }
     
     .logo-wrapper {
-        margin-bottom: 5px;
+        margin-bottom: 0; /* Cola um pouco mais no subtítulo para ganhar espaço */
     }
 }
 
