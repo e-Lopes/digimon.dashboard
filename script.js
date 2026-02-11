@@ -109,14 +109,14 @@ async function loadDatesForStore(storeId) {
 async function displayTournament() {
     try {
         showLoading(true);
-        
+
         const resultsRes = await fetch(
-            `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&select=*&order=placement.asc`, 
+            `${SUPABASE_URL}/rest/v1/v_podium_full?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&order=placement.asc`,
             { headers }
         );
-        
+
         if (!resultsRes.ok) throw new Error('Error loading results');
-        
+
         const results = await resultsRes.json();
 
         if (!results || results.length === 0) {
@@ -125,89 +125,30 @@ async function displayTournament() {
             return;
         }
 
-        const deckIds = [...new Set(results.map(r => r.deck_id).filter(id => id))];
-        
-        let decksMap = {};
-        if (deckIds.length > 0) {
-            try {
-                const decksRes = await fetch(
-                    `${SUPABASE_URL}/rest/v1/decks?id=in.(${deckIds.join(',')})&select=id,name`, 
-                    { headers }
-                );
-                
-                if (decksRes.ok) {
-                    const decks = await decksRes.json();
-                    
-                    const imagesRes = await fetch(
-                        `${SUPABASE_URL}/rest/v1/deck_images?deck_id=in.(${deckIds.join(',')})&select=deck_id,image_url`, 
-                        { headers }
-                    );
-                    
-                    let imagesMap = {};
-                    if (imagesRes.ok) {
-                        const images = await imagesRes.json();
-                        images.forEach(img => {
-                            if (!imagesMap[img.deck_id]) {
-                                imagesMap[img.deck_id] = img.image_url;
-                            }
-                        });
-                    }
-                    
-                    decks.forEach(deck => {
-                        decksMap[deck.id] = {
-                            name: deck.name,
-                            image_url: imagesMap[deck.id] || null
-                        };
-                    });
-                }
-            } catch (err) {
-                console.error("Error searching for decks/images:", err);
-            }
-        }
-
-        const combinedResults = results.map(result => {
-            const deckInfo = decksMap[result.deck_id];
-            
-            if (!deckInfo) {
-                return {
-                    ...result,
-                    deck: { 
-                        name: `Deck ID: ${result.deck_id || 'Unknown'}`,
-                        image_url: null
-                    }
-                };
-            }
-            
-            return {
-                ...result,
-                deck: deckInfo
-            };
-        });
-
-        const totalPlayers = combinedResults[0].total_players;
+        const totalPlayers = results[0].total_players;
         document.getElementById('totalPlayers').textContent = totalPlayers;
 
-        // ✅ Preparar dados para canvas
         const storeSelect = document.getElementById('storeFilter');
         const storeName = storeSelect.options[storeSelect.selectedIndex].text;
+
         const [year, month, day] = currentDate.split('-');
         const dateStr = `${day}/${month}/${year}`;
-        
+
         if (typeof setTournamentDataForCanvas === 'function') {
             setTournamentDataForCanvas({
-                topThree: combinedResults.slice(0, 4), // ✅ Mudado para 4
+                topFour: results.slice(0, 4),
                 storeName: storeName,
                 dateStr: dateStr,
                 totalPlayers: totalPlayers,
-                allResults: combinedResults
+                allResults: results
             });
         }
 
-        // ✅ Exibir até 4 posições
-        displayPodium(combinedResults.slice(0, 4));
-        displayPositions(combinedResults);
-        
+        displayPodium(results.slice(0, 4));
+        displayPositions(results);
+
         showLoading(false);
+
     } catch (err) {
         console.error("Error displaying tournament:", err);
         showError();
@@ -215,7 +156,6 @@ async function displayTournament() {
     }
 }
 
-// ✅ EXIBIR PÓDIO (ATÉ 4 POSIÇÕES)
 function displayPodium(topFour) {
     const positions = [
         { id: 'firstPlace', placement: 1 },
@@ -223,39 +163,38 @@ function displayPodium(topFour) {
         { id: 'thirdPlace', placement: 3 },
         { id: 'fourthPlace', placement: 4 }
     ];
-    
+
     positions.forEach((pos) => {
         const card = document.getElementById(pos.id);
         const entry = topFour.find(e => e.placement === pos.placement);
-        
-        if (entry && entry.deck) {
+
+        if (entry) {
             const img = card.querySelector('.deck-card-image');
             const deckNameEl = card.querySelector('.deck-name');
             const playerNameEl = card.querySelector('.player-name');
-            
-            let imageUrl = entry.deck.image_url;
-            
+
+            let imageUrl = entry.image_url;
+
             if (!imageUrl) {
-                imageUrl = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 10))}`;
+                imageUrl = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.substring(0, 10))}`;
             }
-            
+
             img.src = imageUrl;
-            img.alt = entry.deck.name;
-            
+            img.alt = entry.deck;
+
             img.onerror = () => {
-                img.src = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 10))}`;
+                img.src = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.substring(0, 10))}`;
             };
-            
-            deckNameEl.textContent = entry.deck.name;
-            
-            // ✅ Mostrar nome do jogador se existir
-            if (entry.player_name) {
-                playerNameEl.textContent = entry.player_name;
+
+            deckNameEl.textContent = entry.deck;
+
+            if (entry.player) {
+                playerNameEl.textContent = entry.player;
                 playerNameEl.style.display = 'block';
             } else {
                 playerNameEl.style.display = 'none';
             }
-            
+
             card.style.display = 'flex';
         } else {
             card.style.display = 'none';
@@ -266,23 +205,22 @@ function displayPodium(topFour) {
 function displayPositions(results) {
     const container = document.getElementById('positionsList');
     container.innerHTML = '';
-    
+
     results.forEach(entry => {
-        if (!entry.deck) return;
-        
         const div = document.createElement('div');
         div.className = 'position-item';
-        
+
         if (entry.placement === 1) div.classList.add('top-1');
         if (entry.placement === 2) div.classList.add('top-2');
         if (entry.placement === 3) div.classList.add('top-3');
         if (entry.placement === 4) div.classList.add('top-4');
-        
+
         div.innerHTML = `
             <span class="position-number">${entry.placement}º</span>
-            <span class="position-deck">${entry.deck.name}</span>
+            <span class="position-deck">${entry.deck}</span>
+            ${entry.player ? `<span class="position-player">- ${entry.player}</span>` : ''}
         `;
-        
+
         container.appendChild(div);
     });
 }
