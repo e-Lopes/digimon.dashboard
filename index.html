@@ -14,8 +14,10 @@
 <body>
     <div class="container">
         <header>
-            <h1>DigiStats</h1>
-            <p class="subtitle">Digimon TCG Tournament Results v1.1.1857</p>
+            <div class="logo-wrapper">
+                <img src="icons/logo.png" alt="DigiStats" class="header-logo">
+            </div>
+            <p class="subtitle">Digimon TCG Tournament Results v1.2.0</p>
             <div style="margin-top: 15px;">
                 <a href="torneios/index.html" class="nav-button" style="display: inline-flex; align-items: center; gap: 8px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s;">
                 <span>🏆 Submit Tournament Report</span>
@@ -26,14 +28,13 @@
                 <a href="decks/index.html" class="nav-button" style="display: inline-flex; align-items: center; gap: 8px; color: white; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 8px; transition: transform 0.2s, box-shadow 0.2s;">
                 <span>🃏 Manage Decks</span>
                 </a>
-
             </div>
         </header>
 
         <div class="filters">
             <div class="filter-group">
-                <label for="storeFilter">1) Store Name</label> <!-- MUDADO para storeFilter -->
-                <select id="storeFilter" required> <!-- MUDADO para storeFilter -->
+                <label for="storeFilter">1) Store Name</label>
+                <select id="storeFilter" required>
                     <option value="">Select store...</option>
                 </select>
             </div>
@@ -51,43 +52,76 @@
             </div>
         </div>
 
+        <!-- ✅ BOTÃO PARA GERAR POST -->
+        <div id="generatePostSection" style="display: none; text-align: center; margin-bottom: 30px;">
+            <button id="generatePostBtn" class="generate-post-btn">
+                📸 Generate Instagram Post
+            </button>
+        </div>
+
         <div class="main-content">
             <div class="podium-wrapper">
-                <div class="podium-container">                    
-                    <div class="podium-card first-place" id="firstPlace">
-                        <div class="rank-badge gold">1</div>
+                <div class="podium-container">
+                    <!-- ✅ 1º LUGAR -->
+                    <div class="podium-card first-place" id="firstPlace" style="display: none;">
+                        <div class="rank-badge gold">
+                            <span>1º</span>
+                        </div>
+                        <div class="deck-card-footer">
+                            <div class="player-name"></div>
+                            <div class="deck-name">-</div>
+                        </div>          
                         <div class="card-image-wrapper">
                             <img src="" alt="1st Place" class="deck-card-image">
-                        </div>
-                        <div class="deck-card-footer gold-bg">
-                            <span class="deck-name">-</span>
-                        </div>
+                        </div>              
                     </div>
-
-                    <div class="podium-card second-place" id="secondPlace">
-                        <div class="rank-badge silver">2</div>
+                    
+                    <!-- ✅ 2º LUGAR -->
+                    <div class="podium-card second-place" id="secondPlace" style="display: none;">
+                        <div class="rank-badge silver">
+                            <span>2º</span>
+                        </div>
+                        <div class="deck-card-footer">
+                            <div class="player-name"></div>
+                            <div class="deck-name">-</div>
+                        </div>
                         <div class="card-image-wrapper">
                             <img src="" alt="2nd Place" class="deck-card-image">
-                        </div>
-                        <div class="deck-card-footer silver-bg">
-                            <span class="deck-name">-</span>
-                        </div>
+                        </div>                        
                     </div>
 
-                    <div class="podium-card third-place" id="thirdPlace">
-                        <div class="rank-badge bronze">3</div>
+                    <!-- ✅ 3º LUGAR -->
+                    <div class="podium-card third-place" id="thirdPlace" style="display: none;">
+                        <div class="rank-badge bronze">
+                            <span>3º</span>
+                        </div>
+                        <div class="deck-card-footer">
+                            <div class="player-name"></div>
+                            <div class="deck-name">-</div>
+                        </div>
                         <div class="card-image-wrapper">
                             <img src="" alt="3rd Place" class="deck-card-image">
+                        </div>                        
+                    </div>
+
+                    <!-- ✅ 4º LUGAR -->
+                    <div class="podium-card fourth-place" id="fourthPlace" style="display: none;">
+                        <div class="rank-badge green">
+                            <span>4º</span>
                         </div>
-                        <div class="deck-card-footer bronze-bg">
-                            <span class="deck-name">-</span>
+                        <div class="deck-card-footer">
+                            <div class="player-name"></div>
+                            <div class="deck-name">-</div>
                         </div>
+                        <div class="card-image-wrapper">
+                            <img src="" alt="4th Place" class="deck-card-image">
+                        </div>                        
                     </div>
                 </div>
             </div>
 
             <div class="positions-section">
-                <h2>Full Results</h2>
+                <h2>FULL RESULTS</h2>
                 <div class="positions-grid" id="positionsList"></div>
             </div>
         </div>
@@ -102,7 +136,25 @@
         </div>
     </div>
 
+    <!-- ✅ MODAL DE PREVIEW DO POST -->
+    <div id="postPreviewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📸 Instagram Post Preview</h2>
+                <button class="modal-close" onclick="closePostPreview()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <canvas id="postCanvas" width="1080" height="1080"></canvas>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-download" onclick="downloadPost()">⬇️ Download Image</button>
+                <button class="btn-cancel" onclick="closePostPreview()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="canvas-generator.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')

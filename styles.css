@@ -1,8 +1,14 @@
+/* ============================================================
+   RESET + FONTES
+============================================================ */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Zing Rust Base', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Zing+Rust+Base:wght@700&display=swap');
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,24 +17,55 @@ body {
     padding: 20px;
 }
 
+/* Container para garantir a centralização */
+.logo-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    padding: 0 20px; /* Evita que o logo encoste nas bordas do celular */
+}
+
+/* Controle responsivo da imagem */
+.header-logo {
+    width: 100%;       /* Permite que ela diminua em telas pequenas */
+    max-width: 180px;  /* Define o tamanho máximo ideal para não ficar gigante */
+    height: auto;      /* Mantém a proporção e evita achatar a imagem */
+    display: block;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+}
+
+/* Ajuste específico para Mobile (telas menores que 768px) */
+@media (max-width: 768px) {
+    .header-logo {
+        max-width: 140px; /* No celular ela fica um pouco menor para dar espaço ao conteúdo */
+    }
+    
+    .logo-wrapper {
+        margin-bottom: 5px;
+    }
+}
+
+/* ============================================================
+   CONTAINER
+============================================================ */
 .container {
     max-width: 1400px;
     margin: 0 auto;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     padding: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.6s ease;
 }
 
+/* ============================================================
+   HEADER
+============================================================ */
 header {
     text-align: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 3px solid #667eea;
-}
-
-header .nav-button {
-    margin: 5px;
 }
 
 h1 {
@@ -40,9 +77,11 @@ h1 {
 .subtitle {
     color: #666;
     font-size: 1.1em;
-    margin-bottom: 15px;
 }
 
+/* ============================================================
+   FILTROS
+============================================================ */
 .filters {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
@@ -50,7 +89,7 @@ h1 {
     margin-bottom: 40px;
     padding: 20px;
     background: #f8f9fa;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 .filter-group {
@@ -70,15 +109,8 @@ h1 {
     border: 2px solid #ddd;
     border-radius: 8px;
     font-size: 1em;
-    transition: border-color 0.3s;
+    transition: 0.3s;
     background: white;
-    cursor: pointer;
-}
-
-.filter-group select:disabled {
-    background: #e9ecef;
-    cursor: not-allowed;
-    opacity: 0.6;
 }
 
 .filter-group select:focus {
@@ -86,6 +118,7 @@ h1 {
     border-color: #667eea;
 }
 
+/* Total Players */
 .total-players {
     display: flex;
     flex-direction: column;
@@ -97,179 +130,183 @@ h1 {
     border: 2px solid #667eea;
 }
 
-.total-players label {
-    font-size: 0.85em;
-    font-weight: 600;
-    color: #667eea;
-    margin-bottom: 5px;
-}
-
 .total-number {
     font-size: 2em;
     font-weight: bold;
     color: #333;
 }
 
-/* PÓDIO */
-.podium-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 30px;
-    margin: 60px 0 40px 0;
-    padding: 20px;
-    flex: 1;
-}
-
-/* Container principal com pódio e lista lado a lado */
+/* ============================================================
+   MAIN CONTENT
+============================================================ */
 .main-content {
     display: flex;
     gap: 40px;
     align-items: flex-start;
+    justify-content: center; /* Centraliza os blocos horizontalmente */
+    width: 100%;             /* Garante que use toda a largura disponível */
 }
 
-.podium-wrapper {
+/* ============================================================
+   PÓDIO (ESTRUTURA LATERAL COM BOLA)
+============================================================ */
+.podium-container {
     flex: 1;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 45px;
+    max-width: 800px;
 }
 
 .podium-card {
     position: relative;
-    border-radius: 15px;
-    overflow: visible;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    align-items: center;
+    border-radius: 20px 120px 120px 20px;
+    padding: 25px 230px 25px 30px;
+    min-height: 160px;
     background: white;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    transition: 0.3s;
 }
 
-.podium-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* Ordem do pódio: 2º, 1º, 3º */
-.second-place {
-    width: 280px;
-    border: 5px solid #C0C0C0; /* Prata */
-    order: 2;
-}
-
+/* ============================================================
+   CORES DAS POSIÇÕES
+============================================================ */
 .first-place {
-    width: 320px;
-    border: 6px solid #FFD700; /* Ouro */
-    order: 1;
+    border-left: 12px solid #FFD700;
+    background: linear-gradient(90deg, #fff 70%, #fff9e6);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.35);
+    animation: championGlow 2.5s infinite alternate;
+}
+
+.second-place {
+    border-left: 12px solid #C0C0C0;
+    background: linear-gradient(90deg, #fff 70%, #f3f3f3);
 }
 
 .third-place {
-    width: 280px;
-    border: 5px solid #CD7F32; /* Bronze */
-    order: 3;
+    border-left: 12px solid #CD7F32;
+    background: linear-gradient(90deg, #fff 70%, #fff4ed);
 }
 
-.rank-badge {
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.5em;
-    z-index: 10;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+.fourth-place {
+    border-left: 12px solid #268d7c;
+    background: linear-gradient(90deg, #fff 70%, #e8f5f3);
 }
 
-.rank-badge.gold {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.rank-badge.silver {
-    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.rank-badge.bronze {
-    background: linear-gradient(135deg, #CD7F32, #B87333);
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
+/* ============================================================
+   BOLA GIGANTE
+============================================================ */
 .card-image-wrapper {
-    width: 100%;
-    height: 420px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 8px solid white;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
     overflow: hidden;
-    background: #f0f0f0;
-    border-radius: 15px 15px 0 0;
-}
-
-.first-place .card-image-wrapper {
-    height: 480px;
 }
 
 .deck-card-image {
     width: 100%;
-    height: 100%;
     object-fit: cover;
-    display: block;
+    transform: scale(1.9);
+    transform-origin: center 11%;
+}
+
+/* Nome do Jogador (Menor e sutil) */
+.player-name {
+    font-size: 0.9em;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+/* Nome do Deck (Destaque com Zing Rust Base) */
+.deck-name {
+    font-family: 'Zing Rust Base', sans-serif; /* Aplicando a fonte solicitada */
+    font-size: 1.8em;
+    color: #333;
+    line-height: 1;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+}
+
+/* ============================================================
+   BADGE OCTÓGONO
+============================================================ */
+.rank-badge {
+    font-family: 'Zing Rust Base', sans-serif; /* Fonte consistente em todo o app */
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    font-weight: bold;
+    position: relative;
+    margin-right: 20px;
+    color: #000;
+}
+
+/* Adicionando o símbolo º automaticamente se desejar manter o padrão */
+.rank-badge span::after {
+    content: "º";
+    font-size: 0.5em;
+    vertical-align: super;
 }
 
 .deck-card-footer {
-    padding: 20px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 1.2em;
-    color: #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    z-index: 2; /* Garante que o texto fique acima de possíveis brilhos */
 }
 
-.first-place .deck-card-footer {
-    font-size: 1.4em;
+.rank-badge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+    z-index: -1;
 }
 
-.gold-bg {
-    background: linear-gradient(135deg, #FFD700, #FFC107);
-    color: #333;
+.rank-badge.gold { color: #FFD700; }
+.rank-badge.silver { color: #C0C0C0; }
+.rank-badge.bronze { color: #CD7F32; }
+.rank-badge.green { color: #268d7c; }
+
+.rank-badge span {
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.4);
 }
 
-.silver-bg {
-    background: linear-gradient(135deg, #C0C0C0, #E0E0E0);
-    color: #333;
-}
-
-.bronze-bg {
-    background: linear-gradient(135deg, #CD7F32, #D4A574);
-    color: #fff;
-}
-
-/* LISTA DE POSIÇÕES */
+/* ============================================================
+   LISTA LATERAL
+============================================================ */
 .positions-section {
-    min-width: 300px;
-    max-width: 350px;
+    width: 380px;
     padding: 30px;
     background: #f8f9fa;
-    border-radius: 15px;
-    height: fit-content;
-    margin-top: 60px;
+    border-radius: 20px;
 }
 
 .positions-section h2 {
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 1.5em;
+    font-family: 'Zing Rust Base';
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .positions-grid {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .position-item {
@@ -278,82 +315,72 @@ h1 {
     align-items: center;
     padding: 12px 18px;
     background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.position-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.position-number {
-    font-weight: 700;
-    color: #667eea;
-    font-size: 1em;
-    min-width: 35px;
-}
-
-.position-deck {
-    font-weight: 500;
-    color: #333;
-    flex: 1;
-    text-align: right;
-}
-
-/* Top 3 destacados */
-.position-item.top-1 {
-    background: linear-gradient(135deg, #FFD700, #FFC107);
-    border: 2px solid #FFD700;
-}
-
-.position-item.top-2 {
-    background: linear-gradient(135deg, #C0C0C0, #E0E0E0);
-    border: 2px solid #C0C0C0;
-}
-
-.position-item.top-3 {
-    background: linear-gradient(135deg, #CD7F32, #D4A574);
-    border: 2px solid #CD7F32;
-    color: white;
-}
-
-.position-item.top-3 .position-number,
-.position-item.top-3 .position-deck {
-    color: white;
-}
-
-.loading {
-    text-align: center;
-    padding: 60px;
-}
-
-.spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.error-message {
-    background: #ffebee;
-    color: #c62828;
-    padding: 20px;
     border-radius: 10px;
-    text-align: center;
-    margin: 20px 0;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+    transition: 0.2s;
 }
 
-/* Responsive Design */
+/* Hover normal */
+.position-item:hover {
+    transform: translateX(6px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+/* TOP 4 SEMPRE ATIVO */
+.position-item.top-1,
+.position-item.top-2,
+.position-item.top-3,
+.position-item.top-4 {
+    transform: translateX(6px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* Aplica o efeito de hover especificamente quando o mouse está em cima do Top 4 */
+.position-item.top-1:hover,
+.position-item.top-2:hover,
+.position-item.top-3:hover,
+.position-item.top-4:hover {
+    transform: translateX(12px); /* Move um pouco mais que o normal (6px) para destacar */
+    filter: brightness(1.1);    /* Dá um leve brilho ao passar o mouse */
+    cursor: pointer;
+}
+
+/* Ajuste no hover dos itens normais (5º+) para manter a consistência */
+.position-item:not([class*="top-"]):hover {
+    transform: translateX(10px);
+    background-color: #f0f0f0;
+}
+
+/* Gradientes Top */
+.position-item.top-1 { background: linear-gradient(135deg, #FFD700, #FFC107); }
+.position-item.top-2 { background: linear-gradient(135deg, #C0C0C0, #E0E0E0); }
+.position-item.top-3 { background: linear-gradient(135deg, #CD7F32, #D4A574); color: white; }
+.position-item.top-4 { background: #268d7c; color: white; }
+
+/* Número com º automático */
+.position-number::after {
+    content: "º";
+    font-size: 0.7em;
+    vertical-align: super;
+    margin-left: 2px;
+}
+
+/* ============================================================
+   ANIMAÇÕES
+============================================================ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes championGlow {
+    from { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+    to { box-shadow: 0 0 35px rgba(255, 215, 0, 0.8); }
+}
+
+/* ============================================================
+   RESPONSIVO
+============================================================ */
 @media (max-width: 1200px) {
     .main-content {
         flex-direction: column;
@@ -362,239 +389,25 @@ h1 {
 
     .positions-section {
         width: 100%;
-        max-width: 600px;
-        margin-top: 30px;
-    }
-}
-
-@media (max-width: 1024px) {
-    .podium-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .first-place,
-    .second-place,    
-    .third-place {
-        width: 100%;
-        max-width: 350px;
-        order: 0 !important;
-    }
-
-    .first-place {
-        margin: 10px 0;
-    }
-
-    .second-place {
-        margin: 10px 0;
-    }
-
-    .third-place {
-        margin: 10px 0;
+        max-width: 800px;
     }
 }
 
 @media (max-width: 768px) {
     .filters {
         grid-template-columns: 1fr;
-        gap: 15px;
-        padding: 15px;
-    }
-
-    .container {
-        padding: 15px;
-        border-radius: 15px;
-    }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
-    .subtitle {
-        font-size: 0.9em;
-    }
-
-    /* Ajustar botões do header */
-    header .nav-button {
-        display: block !important;
-        width: 100%;
-        margin: 8px 0 !important;
-        text-align: center;
-        padding: 10px 15px !important;
-    }
-
-    header .nav-button span:first-child {
-        display: inline; /* Manter ícones */
-    }
-
-    /* Esconder separador */
-    header span[style*="color: #ccc"] {
-        display: none;
-    }
-
-    .positions-section {
-        max-width: 100%;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .positions-section h2 {
-        font-size: 1.3em;
-    }
-
-    /* Ajustar cards do pódio */
-    .podium-container {
-        margin: 30px 0 20px 0;
-        padding: 10px;
-    }
-
-    .first-place,
-    .second-place,
-    .third-place {
-        max-width: 100%;
-        width: 100%;
-    }
-
-    .card-image-wrapper {
-        height: 350px !important;
-    }
-
-    .first-place .card-image-wrapper {
-        height: 380px !important;
-    }
-
-    .second-place .card-image-wrapper {
-        height: 360px !important;
-    }
-
-    .deck-card-footer {
-        font-size: 1em !important;
-        padding: 15px !important;
-    }
-
-    .first-place .deck-card-footer {
-        font-size: 1.2em !important;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 5px;
-    }
-
-    .container {
-        padding: 10px;
-        border-radius: 10px;
-    }
-
-    h1 {
-        font-size: 1.5em;
-    }
-
-    .subtitle {
-        font-size: 0.8em;
-    }
-
-    header {
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-    }
-
-    .filters {
-        padding: 10px;
-        gap: 10px;
-    }
-
-    .filter-group select {
-        padding: 10px;
-        font-size: 0.9em;
-    }
-
-    .total-players {
-        padding: 10px 20px;
-    }
-
-    .total-players label {
-        font-size: 0.75em;
-    }
-
-    .total-number {
-        font-size: 1.5em;
     }
 
     .podium-card {
-        max-width: 100%;
+        padding: 20px;
+        border-radius: 20px;
+        flex-direction: column;
+        text-align: center;
     }
 
     .card-image-wrapper {
-        height: 300px !important;
-    }
-
-    .first-place .card-image-wrapper {
-        height: 320px !important;
-    }
-
-    .second-place .card-image-wrapper {
-        height: 310px !important;
-    }
-
-    .rank-badge {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2em;
-        top: -20px;
-    }
-
-    .first-place,
-    .second-place,
-    .third-place {
-        border-width: 4px;
-    }
-
-    .first-place {
-        border-width: 5px;
-    }
-
-    .deck-card-footer {
-        padding: 12px !important;
-        font-size: 0.95em !important;
-    }
-
-    .first-place .deck-card-footer {
-        font-size: 1.1em !important;
-    }
-
-    .positions-section {
-        padding: 15px;
-    }
-
-    .positions-section h2 {
-        font-size: 1.2em;
-        margin-bottom: 15px;
-    }
-
-    .position-item {
-        padding: 10px 15px;
-        font-size: 0.9em;
-    }
-
-    .position-number {
-        font-size: 0.9em;
-        min-width: 30px;
-    }
-
-    .position-deck {
-        font-size: 0.9em;
-    }
-
-    .podium-container {
-        margin: 20px 0 15px 0;
-        padding: 5px;
-        gap: 15px;
-    }
-
-    .main-content {
-        gap: 20px;
+        position: relative;
+        transform: none;
+        margin-top: 20px;
     }
 }

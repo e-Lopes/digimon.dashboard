@@ -11,7 +11,7 @@ let currentStore = '';
 let currentDate = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    clearDisplay(); // ✅ ESCONDER CARDS VAZIOS AO CARREGAR
+    clearDisplay();
     await loadStores();
     setupEventListeners();
 });
@@ -42,7 +42,6 @@ function setupEventListeners() {
     });
 }
 
-// Carrega as Lojas
 async function loadStores() {
     try {
         showLoading(true);
@@ -93,7 +92,6 @@ async function loadDatesForStore(storeId) {
             const option = document.createElement('option');
             option.value = dateStr;
             
-            // ✅ Formatar data usando UTC para evitar problemas de timezone
             const [year, month, day] = dateStr.split('-');
             const formattedDate = `${day}/${month}/${year}`;
             
@@ -112,9 +110,6 @@ async function displayTournament() {
     try {
         showLoading(true);
         
-        console.log("Buscando dados para:", currentStore, currentDate);
-        
-        // PRIMEIRO: Buscar resultados do torneio
         const resultsRes = await fetch(
             `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&select=*&order=placement.asc`, 
             { headers }
@@ -123,7 +118,6 @@ async function displayTournament() {
         if (!resultsRes.ok) throw new Error('Error loading results');
         
         const results = await resultsRes.json();
-        console.log("Resultados brutos:", results);
 
         if (!results || results.length === 0) {
             clearDisplay();
@@ -131,11 +125,8 @@ async function displayTournament() {
             return;
         }
 
-        // SEGUNDO: Coletar todos os deck_ids únicos
         const deckIds = [...new Set(results.map(r => r.deck_id).filter(id => id))];
-        console.log("Deck IDs encontrados:", deckIds);
         
-        // TERCEIRO: Buscar informações dos decks E suas imagens
         let decksMap = {};
         if (deckIds.length > 0) {
             try {
@@ -146,9 +137,7 @@ async function displayTournament() {
                 
                 if (decksRes.ok) {
                     const decks = await decksRes.json();
-                    console.log("Decks encontrados:", decks);
                     
-                    // Buscar todas as imagens de uma vez
                     const imagesRes = await fetch(
                         `${SUPABASE_URL}/rest/v1/deck_images?deck_id=in.(${deckIds.join(',')})&select=deck_id,image_url`, 
                         { headers }
@@ -157,8 +146,6 @@ async function displayTournament() {
                     let imagesMap = {};
                     if (imagesRes.ok) {
                         const images = await imagesRes.json();
-                        console.log("Imagens encontradas:", images);
-                        
                         images.forEach(img => {
                             if (!imagesMap[img.deck_id]) {
                                 imagesMap[img.deck_id] = img.image_url;
@@ -177,10 +164,7 @@ async function displayTournament() {
                 console.error("Error searching for decks/images:", err);
             }
         }
-        
-        console.log("Deck map (with images):", decksMap);
 
-        // QUARTO: Combinar dados
         const combinedResults = results.map(result => {
             const deckInfo = decksMap[result.deck_id];
             
@@ -200,16 +184,27 @@ async function displayTournament() {
             };
         });
 
-        console.log("Resultados combinados:", combinedResults);
-
-        // Atualizar total de jogadores
         const totalPlayers = combinedResults[0].total_players;
         document.getElementById('totalPlayers').textContent = totalPlayers;
 
-        // Exibir pódio
-        displayPodium(combinedResults.slice(0, 3));
+        // ✅ Preparar dados para canvas
+        const storeSelect = document.getElementById('storeFilter');
+        const storeName = storeSelect.options[storeSelect.selectedIndex].text;
+        const [year, month, day] = currentDate.split('-');
+        const dateStr = `${day}/${month}/${year}`;
         
-        // Exibir lista completa
+        if (typeof setTournamentDataForCanvas === 'function') {
+            setTournamentDataForCanvas({
+                topThree: combinedResults.slice(0, 4), // ✅ Mudado para 4
+                storeName: storeName,
+                dateStr: dateStr,
+                totalPlayers: totalPlayers,
+                allResults: combinedResults
+            });
+        }
+
+        // ✅ Exibir até 4 posições
+        displayPodium(combinedResults.slice(0, 4));
         displayPositions(combinedResults);
         
         showLoading(false);
@@ -220,71 +215,50 @@ async function displayTournament() {
     }
 }
 
-
-function displayPodium(topThree) {
+// ✅ EXIBIR PÓDIO (ATÉ 4 POSIÇÕES)
+function displayPodium(topFour) {
     const positions = [
         { id: 'firstPlace', placement: 1 },
         { id: 'secondPlace', placement: 2 },
-        { id: 'thirdPlace', placement: 3 }
+        { id: 'thirdPlace', placement: 3 },
+        { id: 'fourthPlace', placement: 4 }
     ];
     
-    positions.forEach((pos, index) => {
+    positions.forEach((pos) => {
         const card = document.getElementById(pos.id);
-        const entry = topThree.find(e => e.placement === pos.placement); // ✅ BUSCAR POR PLACEMENT
+        const entry = topFour.find(e => e.placement === pos.placement);
         
         if (entry && entry.deck) {
             const img = card.querySelector('.deck-card-image');
-            const name = card.querySelector('.deck-name');
-            
-            console.log(`Exibindo deck ${pos.placement}º:`, entry.deck);
+            const deckNameEl = card.querySelector('.deck-name');
+            const playerNameEl = card.querySelector('.player-name');
             
             let imageUrl = entry.deck.image_url;
             
             if (!imageUrl) {
-                imageUrl = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
-            } else if (imageUrl.endsWith('.webp')) {
-                imageUrl = imageUrl;
-            } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-                if (imageUrl.startsWith('/')) {
-                    imageUrl = `https://vllqakohumoinpdwnsqa.supabase.co/storage/v1/object/public${imageUrl}`;
-                } else {
-                    imageUrl = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
-                }
+                imageUrl = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 10))}`;
             }
-            
-            console.log(`URL da imagem para ${entry.deck.name}:`, imageUrl);
             
             img.src = imageUrl;
             img.alt = entry.deck.name;
             
             img.onerror = () => {
-                console.log(`Error loading image: ${imageUrl}`);
-                if (imageUrl.endsWith('.webp')) {
-                    const jpgUrl = imageUrl.replace('.webp', '.jpg');
-                    img.src = jpgUrl;
-                    
-                    img.onerror = () => {
-                        img.src = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
-                    };
-                } else {
-                    img.src = `https://via.placeholder.com/320x480/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 15))}`;
-                }
+                img.src = `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent(entry.deck.name.substring(0, 10))}`;
             };
             
-            name.textContent = entry.deck.name;
+            deckNameEl.textContent = entry.deck.name;
             
-            if (entry.decklist_link) {
-                card.style.cursor = 'pointer';
-                card.onclick = () => window.open(entry.decklist_link, '_blank');
+            // ✅ Mostrar nome do jogador se existir
+            if (entry.player_name) {
+                playerNameEl.textContent = entry.player_name;
+                playerNameEl.style.display = 'block';
             } else {
-                card.style.cursor = 'default';
-                card.onclick = null;
+                playerNameEl.style.display = 'none';
             }
             
-            card.style.display = 'block'; // ✅ MOSTRAR o card
+            card.style.display = 'flex';
         } else {
-            console.log(`Sem dados para posição ${pos.placement}`);
-            card.style.display = 'none'; // ✅ ESCONDER se não tem dados
+            card.style.display = 'none';
         }
     });
 }
@@ -302,16 +276,12 @@ function displayPositions(results) {
         if (entry.placement === 1) div.classList.add('top-1');
         if (entry.placement === 2) div.classList.add('top-2');
         if (entry.placement === 3) div.classList.add('top-3');
+        if (entry.placement === 4) div.classList.add('top-4');
         
         div.innerHTML = `
             <span class="position-number">${entry.placement}º</span>
             <span class="position-deck">${entry.deck.name}</span>
         `;
-        
-        if (entry.decklist_link) {
-            div.style.cursor = 'pointer';
-            div.onclick = () => window.open(entry.decklist_link, '_blank');
-        }
         
         container.appendChild(div);
     });
@@ -320,21 +290,27 @@ function displayPositions(results) {
 function clearDisplay() {
     document.getElementById('totalPlayers').textContent = '-';
     
-    // Limpar e ESCONDER pódio
-    ['firstPlace', 'secondPlace', 'thirdPlace'].forEach(id => {
+    ['firstPlace', 'secondPlace', 'thirdPlace', 'fourthPlace'].forEach(id => {
         const card = document.getElementById(id);
-        const img = card.querySelector('.deck-card-image');
-        const name = card.querySelector('.deck-name');
-        
-        img.src = '';
-        img.alt = '';
-        name.textContent = '-';
-        card.style.display = 'none'; // ✅ ESCONDER o card
-        card.onclick = null;
+        if (card) {
+            const img = card.querySelector('.deck-card-image');
+            const deckName = card.querySelector('.deck-name');
+            const playerName = card.querySelector('.player-name');
+            
+            img.src = '';
+            img.alt = '';
+            deckName.textContent = '-';
+            if (playerName) playerName.textContent = '';
+            card.style.display = 'none';
+        }
     });
     
-    // Limpar lista
     document.getElementById('positionsList').innerHTML = '';
+    
+    const generateSection = document.getElementById('generatePostSection');
+    if (generateSection) {
+        generateSection.style.display = 'none';
+    }
 }
 
 function showLoading(show) {
