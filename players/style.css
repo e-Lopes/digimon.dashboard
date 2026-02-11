@@ -211,13 +211,33 @@ input[type="text"]:focus {
 }
 
 /* Ajuste Mobile */
+/* Ajuste Mobile corrigido */
 @media (max-width: 600px) {
+    .container {
+        padding: 20px 15px; /* Evita que o conteúdo encoste nas bordas */
+    }
+
+    .form-row {
+        flex-direction: column; /* Empilha input e botão */
+        align-items: stretch;   /* Faz ambos ocuparem a largura total */
+        gap: 10px;              /* Espaçamento entre eles */
+    }
+
+    input[type="text"], .btn-primary, .btn-cancel {
+        width: 100%;            /* Garante largura total */
+        height: 50px;           /* Ajuste leve na altura para telas menores */
+    }
+
+    .nav-button {
+        width: 100%;            /* Botão Back também ocupa tudo */
+    }
+
     .player-item {
-        padding: 12px 15px;
+        padding: 12px 10px;
     }
     
     .btn-action {
-        padding: 8px 10px; /* Reduz um pouco o preenchimento no mobile */
+        padding: 8px 10px;
         font-size: 0.85rem;
     }
 }
