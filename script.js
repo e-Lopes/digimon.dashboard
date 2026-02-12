@@ -216,15 +216,16 @@ function displayPositions(results) {
         const div = document.createElement('div');
         div.className = 'position-item';
 
-        if (entry.placement === 1) div.classList.add('top-1');
-        if (entry.placement === 2) div.classList.add('top-2');
-        if (entry.placement === 3) div.classList.add('top-3');
-        if (entry.placement === 4) div.classList.add('top-4');
+        if (entry.placement <= 4) {
+            div.classList.add(`top-${entry.placement}`);
+        }
 
         div.innerHTML = `
-            <span class="position-number">${entry.placement}º</span>
-            <span class="position-deck">${entry.deck}</span>
-            ${entry.player ? `<span class="position-player">- ${entry.player}</span>` : ''}
+            <div class="position-rank">${entry.placement}º</div>
+            <div class="position-content">
+                <div class="position-deck">${entry.deck}</div>
+                ${entry.player ? `<div class="position-player">${entry.player}</div>` : ''}
+            </div>
         `;
 
         container.appendChild(div);
