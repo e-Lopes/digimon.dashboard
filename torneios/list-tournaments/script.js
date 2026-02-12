@@ -102,7 +102,7 @@ function renderTable() {
         
         const td6 = document.createElement("td");
         td6.setAttribute("data-label", "Ações:");
-        td6.innerHTML = `<button class="btn-edit" onclick="editTournament('${t.id}')">✏️ Editar</button>`;
+        td6.innerHTML = `<button class="btn-edit" onclick="editTournament('${t.id}')">✏️ Edit</button>`;
         
         tr.appendChild(td1);
         tr.appendChild(td2);
