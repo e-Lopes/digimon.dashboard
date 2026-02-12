@@ -238,12 +238,190 @@ th {
    MÉDIA QUERIES
 ============================================================ */
 @media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        font-size: 0.9em;
+        margin-bottom: 15px;
+    }
+
+    /* Botão de navegação mobile */
+    .nav-button {
+        padding: 10px 12px;
+        font-size: 0.9em;
+    }
+
+    .nav-button span:last-child {
+        display: none;
+    }
+
+    .nav-button span:first-child {
+        margin-right: 0;
+    }
+
+    /* Tabela responsiva - transforma em cards */
+    #tournamentsTable {
+        border: none;
+        width: 100%;
+    }
+
+    #tournamentsTable thead {
+        display: none;
+    }
+
+    #tournamentsTable tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    #tournamentsTable tr {
+        display: block;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #tournamentsTable td {
+        display: block;
+        padding: 8px 0;
+        border: none;
+        text-align: left;
+        word-break: break-word;
+    }
+
+    #tournamentsTable td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #667eea;
+        display: inline-block;
+        margin-right: 8px;
+        min-width: 80px;
+    }
+
+    #tournamentsTable td:nth-child(6) { 
+        margin-top: 10px;
+    }
+    
+    #tournamentsTable td:nth-child(6):before { 
+        content: ""; 
+    }
+
+    /* Botão de edição mobile */
+    .btn-edit {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /* Pagination mobile */
+    .pagination {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .pagination button {
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+
+    /* Modal responsivo mobile */
     .modal-content {
         width: 95%;
-        padding: 20px;
+        max-width: 100%;
+        padding: 15px;
+        border-radius: 12px;
     }
 
     .modal-content h2 {
-        font-size: 1.5em;
+        font-size: 1.3em;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="date"],
+    .form-group input[type="url"],
+    .form-group select {
+        height: 44px;
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+        padding: 12px;
+        font-size: 0.95em;
+    }
+
+    .checkbox-group {
+        margin: 10px 0;
+    }
+
+    .checkbox-group label {
+        font-size: 0.95em;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
+
+    h1 {
+        font-size: 1.3em;
+    }
+
+    .nav-button {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 8px;
+        font-size: 0.85em;
+    }
+
+    #tournamentsTable tr {
+        padding: 12px;
+    }
+
+    #tournamentsTable td {
+        grid-template-columns: 80px 1fr;
+        padding: 6px 0;
+        font-size: 0.9em;
+    }
+
+    .modal-content {
+        padding: 12px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="date"],
+    .form-group input[type="url"],
+    .form-group select {
+        height: 40px;
+        font-size: 16px;
     }
 }

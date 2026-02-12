@@ -70,18 +70,38 @@ function renderTable() {
     slice.forEach(t => {
         const tr = document.createElement("tr");
         const instagramLink = t.instagram_link ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 Abrir</a>` : "—";
-        tr.innerHTML = `
-            <td>${t.tournament_date}</td>
-            <td>${t.store?.name || "—"}</td>
-            <td>${t.tournament_name || "—"}</td>
-            <td>${t.instagram ? "Postado" : "Não postado"}</td>
-            <td>${instagramLink}</td>
-            <td>
-                <button class="btn-edit" onclick="editTournament('${t.id}')">
-                    ✏️ Editar
-                </button>
-            </td>
-        `;
+        
+        const td1 = document.createElement("td");
+        td1.setAttribute("data-label", "Data:");
+        td1.textContent = t.tournament_date;
+        
+        const td2 = document.createElement("td");
+        td2.setAttribute("data-label", "Loja:");
+        td2.textContent = t.store?.name || "—";
+        
+        const td3 = document.createElement("td");
+        td3.setAttribute("data-label", "Nome:");
+        td3.textContent = t.tournament_name || "—";
+        
+        const td4 = document.createElement("td");
+        td4.setAttribute("data-label", "Postado:");
+        td4.textContent = t.instagram ? "Postado" : "Não postado";
+        
+        const td5 = document.createElement("td");
+        td5.setAttribute("data-label", "Instagram:");
+        td5.innerHTML = instagramLink;
+        
+        const td6 = document.createElement("td");
+        td6.setAttribute("data-label", "Ações:");
+        td6.innerHTML = `<button class="btn-edit" onclick="editTournament('${t.id}')">✏️ Editar</button>`;
+        
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tr.appendChild(td4);
+        tr.appendChild(td5);
+        tr.appendChild(td6);
+        
         tbody.appendChild(tr);
     });
 
