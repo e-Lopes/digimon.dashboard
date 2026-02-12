@@ -40,8 +40,6 @@ The database schema is documented in /database/schema.sql
 
 ## 💻 Known Bugs & Future Improvements:
 
-[BUG] Editar um Registro de torneio que ja aconteceu e salvar faz criar um novo registro para cada deck no banco de dados
-
 [Feature]Add cadastro de loja
 
 [Feature]Add Label de Loja e dia em cima do podium
