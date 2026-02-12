@@ -11,6 +11,15 @@ let currentPage = 1;
 const perPage = 30;
 
 // ============================================================
+// FUNÇÃO DE FORMATAÇÃO DE DATA
+// ============================================================
+function formatDate(dateString) {
+    if (!dateString) return "—";
+    const [year, month, day] = dateString.split('-');
+    return `${day}/${month}/${year}`;
+}
+
+// ============================================================
 // INICIALIZAÇÃO - DOMContentLoaded
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -73,7 +82,7 @@ function renderTable() {
         
         const td1 = document.createElement("td");
         td1.setAttribute("data-label", "Data:");
-        td1.textContent = t.tournament_date;
+        td1.textContent = formatDate(t.tournament_date);
         
         const td2 = document.createElement("td");
         td2.setAttribute("data-label", "Loja:");
