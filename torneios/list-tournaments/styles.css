@@ -115,7 +115,10 @@ th {
     display: grid;
     gap: 6px;
     max-height: 180px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+    scrollbar-gutter: stable;
 }
 
 .details-pie-legend-item {
@@ -678,8 +681,9 @@ th {
     }
 
     .details-pie-container {
-        width: 200px;
-        height: 200px;
+        width: min(100%, 180px);
+        aspect-ratio: 1 / 1;
+        height: auto;
     }
 
     .details-podium-card {
@@ -714,8 +718,11 @@ th {
     }
 
     .results-mini {
-        max-height: none;
-        overflow: visible;
+        max-height: 320px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-right: 6px;
+        scrollbar-gutter: stable;
     }
 
     .results-mini-item {

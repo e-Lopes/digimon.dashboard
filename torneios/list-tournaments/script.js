@@ -305,6 +305,7 @@ function buildDeckPieData(results) {
         const initialY = Math.max(4, Math.min(24, 13 - (Math.sin(midRad) * 4)));
         return {
             deck: entry.deck,
+            count: entry.count,
             percent,
             color: colors[index % colors.length],
             image_url: entry.image_url || fallback,
@@ -490,7 +491,7 @@ async function renderTournamentDetails(tournament) {
                 <div class="details-pie-legend-item">
                     <span class="details-pie-legend-color" style="background:${slice.color}"></span>
                     <span class="details-pie-legend-name" title="${slice.deck}">${slice.deck}</span>
-                    <strong>${slice.percent.toFixed(1)}%</strong>
+                    <strong>${slice.count}</strong>
                 </div>
             `).join("")
             : `<div class="details-pie-legend-item">No deck data</div>`;
