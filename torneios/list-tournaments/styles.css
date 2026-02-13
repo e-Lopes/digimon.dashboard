@@ -341,6 +341,11 @@ th {
         margin-right: 0;
     }
 
+    /* Keep text visible when button has only one span */
+    .nav-button span:only-child {
+        display: inline;
+    }
+
     /* Tabela responsiva - transforma em cards */
     #tournamentsTable {
         border: none;
