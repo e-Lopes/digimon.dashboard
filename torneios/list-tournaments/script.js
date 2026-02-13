@@ -262,7 +262,7 @@ function renderCreateResultsRows() {
         <div class="result-row">
             <div class="form-group">
                 <label>Placement</label>
-                <input type="number" value="${index + 1}" readonly>
+                <input type="number" value="${index + 1}" disabled>
             </div>
             <div class="form-group">
                 <label>Player<span class="required">*</span></label>
