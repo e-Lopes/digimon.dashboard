@@ -12,13 +12,10 @@ const IMAGE_BASE_URL = "https://deckbuilder.egmanevents.com/card_images/digimon/
 const isListPage = window.location.pathname.includes('decks/index.html') || 
                    window.location.pathname === '/decks/' || 
                    window.location.pathname.endsWith('decks/');
-const isCadastroPage = window.location.pathname.includes('cadastro.html');
 
 document.addEventListener('DOMContentLoaded', () => {
     if (isListPage) {
         loadDecks();
-    } else if (isCadastroPage) {
-        setupCadastroForm();
     }
 });
 
@@ -209,7 +206,6 @@ async function deleteDeck(deckId, deckName) {
         });
         
         if (res.ok) {
-            alert('Successfully deleted deck!');
             loadDecks();
         } else {
             throw new Error('Error deleting deck');
@@ -224,7 +220,9 @@ async function deleteDeck(deckId, deckName) {
 }
 
 function editDeck(deckId) {
-    window.location.href = `cadastro.html?edit=${deckId}`;
+    if (typeof openEditDeckModal === "function") {
+        openEditDeckModal(deckId, "", "");
+    }
 }
 
 // ========== CADASTRO DE DECKS ==========

@@ -193,7 +193,6 @@ async function createTournamentFormSubmit(e) {
         // Limpa o formulário
         document.getElementById("createTournamentForm").reset();
         
-        alert("✅ Torneio cadastrado com sucesso!");
     } catch (err) {
         console.error("Erro completo:", err);
         alert("Falha ao cadastrar torneio: " + err.message);

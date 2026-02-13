@@ -1,0 +1,40 @@
+<div id="createDeckModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+        <h2>Create Deck</h2>
+        <form id="createDeckForm">
+            <div class="form-group">
+                <label class="form-label" for="createDeckName">Deck Name*</label>
+                <input id="createDeckName" class="form-input" type="text" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="createDeckCode">Deck Code*</label>
+                <input id="createDeckCode" class="form-input" type="text" placeholder="BT16-064" required>
+                <div class="code-examples">
+                    <div class="code-example" data-code="BT24-030">BT24-030</div>
+                    <div class="code-example" data-code="ST22-05">ST22-05</div>
+                    <div class="code-example" data-code="EX5-001">EX5-001</div>
+                    <div class="code-example" data-code="P-183">P-183</div>
+                </div>
+                <div id="createDeckPreview" class="modal-preview" style="display: none;">
+                    <div class="deck-thumb-wrapper modal-preview-thumb">
+                        <img id="createDeckPreviewImage" class="deck-thumb-image" alt="Deck preview">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="btnCloseCreateDeckModal" class="btn-modal-cancel">Cancel</button>
+                <button type="submit" class="btn-modal-save">Create</button>
+            </div>
+
+            <div class="modal-tips">
+                <h4>💡 How to find the card code:</h4>
+                <ul>
+                    <li>The code follows the format: <strong>SET-NUMBER</strong></li>
+                    <li><strong>SET:</strong> BT16, ST22, EX5, P (promo)...</li>
+                    <li><strong>NUMBER:</strong> 001 - 120 (can be 1-3 digits)</li>
+                    <li><strong>Examples:</strong> BT24-030, ST22-05, EX5-001, P-183</li>
+                </ul>
+            </div>
+        </form>
+    </div>
+</div>

@@ -119,8 +119,6 @@ async function editTournamentFormSubmit(e) {
         }
 
         closeEditModal();
-        alert("✅ Torneio atualizado com sucesso!");
-        
         // Recarrega a tabela de torneios
         if (typeof loadTournaments === 'function') {
             await loadTournaments();

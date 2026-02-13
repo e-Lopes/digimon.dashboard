@@ -1,316 +1,52 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Decks - Digimon TCG</title>
     <link rel="stylesheet" href="../styles.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-        }
-
-        .decks-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Navigation at top */
-        .top-nav {
-            margin-bottom: 20px;
-        }
-        
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #667eea;
-        }
-        
-        .page-title {
-            font-size: 2em;
-            color: #333;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .decks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-        }
-        
-        .deck-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 1px solid #eaeaea;
-        }
-        
-        .deck-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .deck-image-container {
-            height: 220px;
-            overflow: hidden;
-            background: linear-gradient(135deg, #667eea20, #764ba220);
-            position: relative;
-        }
-        
-        .deck-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-        
-        .deck-card:hover .deck-image {
-            transform: scale(1.05);
-        }
-        
-        .deck-info {
-            padding: 18px;
-        }
-        
-        .deck-name {
-            font-size: 1.25em;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            word-break: break-word;
-            line-height: 1.3;
-        }
-        
-        .deck-code {
-            font-size: 0.85em;
-            color: #667eea;
-            background: #f0f4ff;
-            padding: 6px 10px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 12px;
-            font-family: 'Courier New', monospace;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        .deck-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .btn-secondary {
-            background: #f8f9fa;
-            color: #333;
-            padding: 10px 16px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.2s;
-            flex: 1;
-            text-align: center;
-        }
-        
-        .btn-secondary:hover {
-            background: #e9ecef;
-            border-color: #667eea;
-        }
-        
-        .btn-danger {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ffcdd2;
-        }
-        
-        .btn-danger:hover {
-            background: #ffcdd2;
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-            grid-column: 1 / -1;
-        }
-        
-        .empty-state-icon {
-            font-size: 3em;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            grid-column: 1 / -1;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        
-        .search-box {
-            margin-bottom: 20px;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .search-input::placeholder {
-            color: #999;
-        }
-
-        .nav-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 12px 20px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .nav-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .container {
-                padding: 20px;
-                border-radius: 15px;
-            }
-
-            .decks-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .page-header {
-                flex-direction: column;
-                gap: 15px;
-                align-items: flex-start;
-            }
-            
-            .btn-primary {
-                width: 100%;
-                text-align: center;
-            }
-            
-            .deck-actions {
-                flex-direction: column;
-            }
-            
-            .btn-secondary {
-                width: 100%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .decks-container {
-                padding: 0;
-            }
-            
-            .page-title {
-                font-size: 1.5em;
-            }
-
-            .deck-image-container {
-                height: 200px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="create-deck/modal.css">
+    <link rel="stylesheet" href="edit-deck/modal.css">
+    
 </head>
 <body>
     <div class="container">
         <div class="decks-container">
-            <!-- ✅ Navigation at top -->
+            <!-- Navigation at top -->
             <div class="top-nav">
                 <a href="../index.html" class="nav-button">
-                    <span>←</span>
+                    <span>&larr;</span>
                     <span>Back to Dashboard</span>
                 </a>
             </div>
 
             <div class="page-header">
-                <h1 class="page-title">🃏 Manage Decks</h1>
-                <a href="cadastro.html" class="btn-primary">+ New Deck</a>
+                <h1 class="page-title">Manage Decks</h1>
+                <div class="header-actions">
+                    <div class="decks-total" id="decksTotalCount">Total: 0</div>
+                    <button id="btnOpenCreateDeckModal" class="btn-primary" type="button">New Deck</button>
+                </div>
             </div>
             
-            <div class="search-box">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    class="search-input" 
-                    placeholder="🔍 Search decks by name..."
-                >
+            <div class="search-row">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="search-input" 
+                        placeholder="Search decks by name..."
+                    >
+                    <select id="pageSizeSelect" class="page-size-select" title="Items per page" aria-label="Items per page">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                        <option value="30" selected>30</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <button type="button" id="viewToggleBtn" class="btn-view-toggle" title="Change view" aria-label="Change view"></button>
             </div>
             
             <div id="decksList" class="decks-grid">
@@ -321,21 +57,27 @@
             </div>
             
             <div id="emptyState" class="empty-state" style="display: none;">
-                <div class="empty-state-icon">🃏</div>
+                <div class="empty-state-icon">&#127183;</div>
                 <h3>No decks registered</h3>
                 <p>Start by adding your first deck!</p>
-                <a href="cadastro.html" class="btn-primary" style="margin-top: 20px;">Add First Deck</a>
+                <button type="button" class="btn-primary" style="margin-top: 20px;" onclick="document.getElementById('btnOpenCreateDeckModal').click()">Add First Deck</button>
             </div>
             
             <div id="noResults" class="empty-state" style="display: none;">
-                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-icon">&#128269;</div>
                 <h3>No decks found</h3>
                 <p>Try searching with different terms.</p>
                 <button onclick="clearSearch()" class="btn-secondary" style="margin-top: 20px;">Clear search</button>
             </div>
+            <div class="pagination" id="decksPagination"></div>
         </div>
     </div>
 
+    <div id="createDeckModalHost"></div>
+    <div id="editDeckModalHost"></div>
+
+    <script src="create-deck/modal.js"></script>
+    <script src="edit-deck/modal.js"></script>
     <script>
         const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
@@ -348,43 +90,201 @@
 
         let allDecks = [];
         let imagesMap = {};
+        let currentView = "list";
+        const VIEW_MODES = ["list", "compact", "grid"];
+        let currentPage = 1;
+        let pageSize = 30;
+        let currentSearchTerm = "";
 
         document.addEventListener('DOMContentLoaded', () => {
+            setupViewToggle();
+            initCreateDeckModal({
+                supabaseUrl: SUPABASE_URL,
+                headers,
+                onCreated: async () => {
+                    await loadDecks();
+                }
+            });
+            initEditDeckModal({
+                supabaseUrl: SUPABASE_URL,
+                headers,
+                onUpdated: async () => {
+                    await loadDecks();
+                }
+            });
             loadDecks();
             setupSearch();
+            setupPaginationControls();
         });
+
+        function setupViewToggle() {
+            const btn = document.getElementById('viewToggleBtn');
+            const savedView = localStorage.getItem('decksViewMode');
+            if (savedView && VIEW_MODES.includes(savedView)) {
+                currentView = savedView;
+            }
+            applyViewMode();
+
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const currentIndex = VIEW_MODES.indexOf(currentView);
+                    const nextIndex = (currentIndex + 1) % VIEW_MODES.length;
+                    currentView = VIEW_MODES[nextIndex];
+                    localStorage.setItem('decksViewMode', currentView);
+                    applyViewMode();
+                });
+            }
+        }
+
+        function applyViewMode() {
+            const container = document.getElementById('decksList');
+            const btn = document.getElementById('viewToggleBtn');
+            if (!container || !btn) return;
+
+            container.classList.remove('view-list', 'view-compact', 'view-grid');
+            if (currentView === 'grid') {
+                container.classList.add('view-grid');
+            } else if (currentView === 'compact') {
+                container.classList.add('view-compact');
+            } else {
+                container.classList.add('view-list');
+            }
+
+            const currentIndex = VIEW_MODES.indexOf(currentView);
+            const nextMode = VIEW_MODES[(currentIndex + 1) % VIEW_MODES.length];
+            const iconMap = {
+                compact: `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="4"></rect>
+                        <rect x="3" y="10" width="18" height="4"></rect>
+                        <rect x="3" y="16" width="18" height="4"></rect>
+                    </svg>
+                `,
+                list: `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <circle cx="4" cy="6" r="1"></circle>
+                        <circle cx="4" cy="12" r="1"></circle>
+                        <circle cx="4" cy="18" r="1"></circle>
+                    </svg>
+                `,
+                grid: `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                `
+            };
+            const labelMap = {
+                compact: 'Switch to table view',
+                list: 'Switch to list view',
+                grid: 'Switch to blocks view'
+            };
+
+            btn.innerHTML = iconMap[nextMode];
+            btn.title = labelMap[nextMode];
+            btn.setAttribute('aria-label', labelMap[nextMode]);
+        }
 
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                filterDecks(searchTerm);
+                currentSearchTerm = e.target.value.toLowerCase().trim();
+                currentPage = 1;
+                renderDecksList();
+            });
+        }
+
+        function setupPaginationControls() {
+            const pageSizeSelect = document.getElementById('pageSizeSelect');
+            if (!pageSizeSelect) return;
+            pageSizeSelect.value = String(pageSize);
+            pageSizeSelect.addEventListener('change', () => {
+                const selected = parseInt(pageSizeSelect.value, 10);
+                pageSize = Number.isInteger(selected) && selected > 0 ? selected : 30;
+                currentPage = 1;
+                renderDecksList();
             });
         }
 
         function filterDecks(searchTerm) {
-            if (!searchTerm) {
-                displayDecks(allDecks, imagesMap);
+            if (!searchTerm) return [...allDecks];
+            return allDecks.filter(deck => deck.name.toLowerCase().includes(searchTerm));
+        }
+
+        function renderDecksList() {
+            const filtered = filterDecks(currentSearchTerm);
+            const totalItems = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pagedDecks = filtered.slice(start, end);
+
+            if (totalItems === 0) {
+                const container = document.getElementById('decksList');
+                const emptyState = document.getElementById('emptyState');
+                const noResults = document.getElementById('noResults');
+                container.style.display = 'none';
+                emptyState.style.display = currentSearchTerm ? 'none' : 'block';
+                noResults.style.display = currentSearchTerm ? 'block' : 'none';
+                renderPagination(0);
                 return;
             }
 
-            const filtered = allDecks.filter(deck => 
-                deck.name.toLowerCase().includes(searchTerm)
-            );
+            document.getElementById('noResults').style.display = 'none';
+            displayDecks(pagedDecks, imagesMap, Boolean(currentSearchTerm));
+            renderPagination(totalPages);
+        }
 
-            if (filtered.length === 0) {
-                document.getElementById('decksList').style.display = 'none';
-                document.getElementById('emptyState').style.display = 'none';
-                document.getElementById('noResults').style.display = 'block';
-            } else {
-                document.getElementById('noResults').style.display = 'none';
-                displayDecks(filtered, imagesMap, true);
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('decksPagination');
+            if (!pagination) return;
+            pagination.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const prev = document.createElement('button');
+            prev.textContent = '<';
+            prev.disabled = currentPage === 1;
+            prev.addEventListener('click', () => {
+                currentPage -= 1;
+                renderDecksList();
+            });
+            pagination.appendChild(prev);
+
+            for (let p = 1; p <= totalPages; p++) {
+                const btn = document.createElement('button');
+                btn.textContent = String(p);
+                if (p === currentPage) btn.classList.add('active');
+                btn.addEventListener('click', () => {
+                    currentPage = p;
+                    renderDecksList();
+                });
+                pagination.appendChild(btn);
             }
+
+            const next = document.createElement('button');
+            next.textContent = '>';
+            next.disabled = currentPage === totalPages;
+            next.addEventListener('click', () => {
+                currentPage += 1;
+                renderDecksList();
+            });
+            pagination.appendChild(next);
         }
 
         function clearSearch() {
             document.getElementById('searchInput').value = '';
-            filterDecks('');
+            currentSearchTerm = '';
+            currentPage = 1;
+            renderDecksList();
         }
 
         async function loadDecks() {
@@ -395,6 +295,7 @@
                 if (!decksRes.ok) throw new Error('Error loading decks');
                 
                 allDecks = await decksRes.json();
+                updateDecksTotal();
                 
                 const imagesRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images?select=deck_id,image_url`, { headers });
                 
@@ -405,7 +306,7 @@
                     });
                 }
                 
-                displayDecks(allDecks, imagesMap);
+                renderDecksList();
                 showLoading(false);
                 
             } catch (error) {
@@ -440,25 +341,38 @@
             
             decks.forEach(deck => {
                 const imageUrl = imagesMap[deck.id];
+                const fallback = 'https://via.placeholder.com/300x220/667eea/ffffff?text=' + encodeURIComponent(deck.name.substring(0, 12));
                 const deckCode = extractCodeFromUrl(imageUrl);
                 
                 const deckCard = document.createElement('div');
-                deckCard.className = 'deck-card';
+                deckCard.className = 'deck-row';
                 deckCard.innerHTML = `
-                    <div class="deck-image-container">
-                        <img src="${imageUrl || 'https://via.placeholder.com/300x220/667eea/ffffff?text=' + encodeURIComponent(deck.name.substring(0, 12))}" 
+                    <div class="deck-thumb-wrapper">
+                        <img src="${imageUrl || fallback}" 
                              alt="${deck.name}" 
-                             class="deck-image" 
-                             onerror="this.onerror=null; this.src='https://via.placeholder.com/300x220/667eea/ffffff?text=${encodeURIComponent(deck.name.substring(0, 12))}'">
-                        ${!imageUrl ? '<div style="position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.8); color: white; padding: 4px 10px; border-radius: 6px; font-size: 0.75em; font-weight: 600;">No Image</div>' : ''}
+                             class="deck-thumb-image" 
+                             onerror="this.onerror=null; this.src='${fallback}'">
                     </div>
                     <div class="deck-info">
                         <h3 class="deck-name">${deck.name}</h3>
                         ${deckCode ? `<div class="deck-code">${deckCode}</div>` : ''}
-                        <div class="deck-actions">
-                            <button class="btn-secondary" onclick="editDeck('${deck.id}')">✏️ Edit</button>
-                            <button class="btn-secondary btn-danger" onclick="deleteDeck('${deck.id}', '${deck.name.replace(/'/g, "\\'")}')">🗑️ Delete</button>
-                        </div>
+                    </div>
+                    <div class="deck-actions">
+                        <button class="btn-secondary btn-icon" type="button" title="Edit deck" aria-label="Edit deck" onclick="editDeck('${deck.id}', '${deck.name.replace(/'/g, "\\'")}', '${(imageUrl || '').replace(/'/g, "\\'")}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+                            </svg>
+                        </button>
+                        <button class="btn-secondary btn-danger btn-icon" type="button" title="Delete deck" aria-label="Delete deck" onclick="deleteDeck('${deck.id}', '${deck.name.replace(/'/g, "\\'")}')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M8 6V4h8v2"/>
+                                <path d="M19 6l-1 14H6L5 6"/>
+                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                <line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                        </button>
                     </div>
                 `;
                 
@@ -510,7 +424,7 @@
                 });
                 
                 if (res.ok) {
-                    alert('✅ Successfully deleted deck!');
+                    currentPage = 1;
                     loadDecks();
                 } else {
                     throw new Error('Error deleting deck');
@@ -518,14 +432,17 @@
                 
             } catch (error) {
                 console.error('Error deleting deck:', error);
-                alert('❌ Error deleting deck. Please try again.');
+                alert('Error deleting deck. Please try again.');
             } finally {
                 showLoading(false);
             }
         }
 
-        function editDeck(deckId) {
-            window.location.href = `cadastro.html?edit=${deckId}`;
+        function editDeck(deckId, deckName, imageUrl) {
+            if (typeof openEditDeckModal === 'function') {
+                openEditDeckModal(deckId, deckName || '', imageUrl || '');
+                return;
+            }
         }
 
         function showLoading(show) {
@@ -538,6 +455,14 @@
         function showError(message) {
             alert(message);
         }
+
+        function updateDecksTotal() {
+            const totalEl = document.getElementById('decksTotalCount');
+            if (!totalEl) return;
+            totalEl.textContent = `Total: ${allDecks.length}`;
+        }
     </script>
 </body>
 </html>
+
+
