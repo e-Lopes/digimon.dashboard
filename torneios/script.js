@@ -206,7 +206,6 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
             body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error("Erro ao salvar.");
-        alert("✅ Resultados salvos!");
         window.location.href = "../index.html";
     } catch (err) { alert(err.message); } finally { showLoading(false); }
 });

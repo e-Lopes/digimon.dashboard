@@ -73,7 +73,6 @@ document.getElementById("tournamentForm").addEventListener("submit", async (e) =
             return;
         }
 
-        alert("✅ Torneio cadastrado com sucesso!");
         window.location.href = "../list-tournaments/";
 
     } catch (err) {
