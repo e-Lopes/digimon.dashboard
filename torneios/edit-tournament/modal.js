@@ -38,6 +38,7 @@ async function loadEditFormData(id) {
         // Carrega os dados do formulário
         document.getElementById("editTournamentDate").value = data.tournament_date || "";
         document.getElementById("editTournamentName").value = data.tournament_name || "";
+        document.getElementById("editTotalPlayers").value = data.total_players ?? "";
         document.getElementById("editInstagramLink").value = data.instagram_link || "";
         document.getElementById("editInstagramPost").checked = data.instagram || false;
 
@@ -96,11 +97,12 @@ async function editTournamentFormSubmit(e) {
             store_id: document.getElementById("editStoreSelect").value,
             tournament_date: document.getElementById("editTournamentDate").value,
             tournament_name: document.getElementById("editTournamentName").value.trim(),
+            total_players: parseInt(document.getElementById("editTotalPlayers").value, 10),
             instagram_link: document.getElementById("editInstagramLink").value.trim(),
             instagram: document.getElementById("editInstagramPost").checked
         };
         
-        if (!updated.store_id || !updated.tournament_date || !updated.tournament_name) {
+        if (!updated.store_id || !updated.tournament_date || !updated.tournament_name || !Number.isInteger(updated.total_players) || updated.total_players < 1) {
             alert("Por favor preencha todos os campos obrigatórios");
             return;
         }

@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ============================================================
 async function loadTournaments() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament?select=id,tournament_date,store:stores(name),tournament_name,instagram&order=tournament_date.desc`, { headers });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament?select=id,tournament_date,store:stores(name),tournament_name,total_players,instagram,instagram_link&order=tournament_date.desc`, { headers });
         if (!res.ok) throw new Error("Erro ao carregar torneios.");
         tournaments = await res.json();
     } catch (err) {
@@ -93,16 +93,20 @@ function renderTable() {
         td3.textContent = t.tournament_name || "—";
         
         const td4 = document.createElement("td");
-        td4.setAttribute("data-label", "Postado:");
-        td4.textContent = t.instagram ? "Postado" : "Não postado";
+        td4.setAttribute("data-label", "Players:");
+        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : "—";
         
         const td5 = document.createElement("td");
-        td5.setAttribute("data-label", "Instagram:");
-        td5.innerHTML = instagramLink;
+        td5.setAttribute("data-label", "Postado:");
+        td5.textContent = t.instagram ? "Postado" : "Não postado";
         
         const td6 = document.createElement("td");
-        td6.setAttribute("data-label", "Ações:");
-        td6.innerHTML = `<button class="btn-edit" onclick="editTournament('${t.id}')">✏️ Edit</button>`;
+        td6.setAttribute("data-label", "Instagram:");
+        td6.innerHTML = instagramLink;
+        
+        const td7 = document.createElement("td");
+        td7.setAttribute("data-label", "Ações:");
+        td7.innerHTML = `<button class="btn-edit" onclick="editTournament('${t.id}')">✏️ Edit</button>`;
         
         tr.appendChild(td1);
         tr.appendChild(td2);
@@ -110,13 +114,14 @@ function renderTable() {
         tr.appendChild(td4);
         tr.appendChild(td5);
         tr.appendChild(td6);
+        tr.appendChild(td7);
         
         tbody.appendChild(tr);
     });
 
     if (slice.length === 0) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="6" style="text-align:center;">Nenhum torneio encontrado</td>`;
+        tr.innerHTML = `<td colspan="7" style="text-align:center;">Nenhum torneio encontrado</td>`;
         tbody.appendChild(tr);
     }
 }
@@ -152,6 +157,7 @@ function openCreateTournamentModal() {
     document.getElementById("createStoreSelect").value = "";
     document.getElementById("createTournamentDate").value = new Date().toISOString().split('T')[0];
     document.getElementById("createTournamentName").value = "";
+    document.getElementById("createTotalPlayers").value = "";
     document.getElementById("createInstagramPost").checked = false;
     
     // Carrega as lojas
@@ -194,11 +200,12 @@ async function createTournamentFormSubmit(e) {
             store_id: document.getElementById("createStoreSelect").value,
             tournament_date: document.getElementById("createTournamentDate").value,
             tournament_name: document.getElementById("createTournamentName").value.trim(),
+            total_players: parseInt(document.getElementById("createTotalPlayers").value, 10),
             instagram_link: document.getElementById("createInstagramLink").value.trim(),
             instagram: document.getElementById("createInstagramPost").checked
         };
 
-        if (!payload.store_id || !payload.tournament_date || !payload.tournament_name) {
+        if (!payload.store_id || !payload.tournament_date || !payload.tournament_name || !Number.isInteger(payload.total_players) || payload.total_players < 1) {
             alert("Por favor preencha todos os campos obrigatórios");
             return;
         }

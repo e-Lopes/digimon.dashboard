@@ -51,6 +51,7 @@ th {
 ============================================================ */
 .form-group input[type="text"],
 .form-group input[type="date"],
+.form-group input[type="number"],
 .form-group input[type="url"],
 .form-group select {
     display: block;
@@ -72,6 +73,7 @@ th {
 
 .form-group input[type="text"]:focus,
 .form-group input[type="date"]:focus,
+.form-group input[type="number"]:focus,
 .form-group input[type="url"]:focus,
 .form-group select:focus {
     outline: none;
@@ -82,10 +84,21 @@ th {
 
 .form-group input[type="text"]:disabled,
 .form-group input[type="date"]:disabled,
+.form-group input[type="number"]:disabled,
 .form-group select:disabled {
     background-color: #e9ecef;
     opacity: 1;
     cursor: not-allowed;
+}
+
+.form-group input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.form-group input[type="number"]::-webkit-outer-spin-button,
+.form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 /* ============================================================
@@ -312,11 +325,11 @@ th {
         min-width: 80px;
     }
 
-    #tournamentsTable td:nth-child(6) { 
+    #tournamentsTable td:nth-child(7) { 
         margin-top: 10px;
     }
     
-    #tournamentsTable td:nth-child(6):before { 
+    #tournamentsTable td:nth-child(7):before { 
         content: ""; 
     }
 
@@ -358,6 +371,7 @@ th {
 
     .form-group input[type="text"],
     .form-group input[type="date"],
+    .form-group input[type="number"],
     .form-group input[type="url"],
     .form-group select {
         height: 44px;
@@ -419,6 +433,7 @@ th {
 
     .form-group input[type="text"],
     .form-group input[type="date"],
+    .form-group input[type="number"],
     .form-group input[type="url"],
     .form-group select {
         height: 40px;
