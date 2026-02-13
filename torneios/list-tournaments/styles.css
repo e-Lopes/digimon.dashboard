@@ -7,6 +7,14 @@ table {
     margin-top: 20px;
 }
 
+#tournamentsTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #ced4da;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
 th, td {
     padding: 10px;
     border: 1px solid #ccc;
@@ -15,6 +23,50 @@ th, td {
 
 th {
     background: #f4f4f4;
+}
+
+.table-store-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.table-store-cell span {
+    vertical-align: middle;
+}
+
+.table-store-content {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.th-with-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.th-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+#tournamentsTable th:nth-child(5),
+#tournamentsTable td:nth-child(5) {
+    width: 90px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#tournamentsTable th:nth-child(6),
+#tournamentsTable td:nth-child(6) {
+    width: 82px;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .sort-button {
@@ -62,9 +114,19 @@ th {
     background: #eef1ff;
 }
 
+#tournamentsTable .details-row .details-row-cell {
+    padding: 0;
+    border-top: none;
+    background: #f7f8ff;
+}
+
+.tournament-inline-details-content {
+    padding: 16px;
+}
+
 .filters-row {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto auto;
     gap: 12px;
     align-items: start;
     margin-bottom: 14px;
@@ -74,6 +136,37 @@ th {
     margin-bottom: 0;
 }
 
+.per-page-filter {
+    display: flex;
+    align-items: flex-end;
+    width: 52px;
+    min-width: 52px;
+    justify-self: end;
+    align-self: end;
+}
+
+.form-group.per-page-filter select {
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    height: 52px;
+    padding: 0 4px;
+    text-align: center;
+    text-align-last: center;
+}
+
+.is-hidden {
+    display: none !important;
+}
+
+.filter-group .filter-select {
+    padding-left: 38px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4h18'/%3E%3Cpath d='M6 4v2l5 6v6l2-1v-5l5-6V4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 16px 16px;
+}
+
 .filters-row > .form-group,
 .filters-row > .filter-actions {
     margin-bottom: 0;
@@ -81,17 +174,15 @@ th {
 
 .filter-actions {
     display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
+    flex-direction: row;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    align-self: end;
 }
 
 .filter-label-spacer {
-    display: block;
-    height: 22px;
-    margin-bottom: 8px;
-    visibility: hidden;
-    user-select: none;
+    display: none;
 }
 
 .filter-actions .btn-cancel {
@@ -105,12 +196,12 @@ th {
 }
 
 .btn-clear-filters {
-    width: 48px;
-    height: 48px;
-    border: 2px solid #ced4da;
+    width: 52px;
+    height: 52px;
+    border: 2px solid #f3c2c2;
     border-radius: 10px;
-    background: #fff;
-    color: #495057;
+    background: #fff7f7;
+    color: #e8a5a5;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -118,10 +209,41 @@ th {
     transition: all 0.2s;
 }
 
-.btn-clear-filters:hover {
+.btn-toggle-view {
+    width: 52px;
+    height: 52px;
+    border: 2px solid #c9d2ff;
+    border-radius: 10px;
+    background: #f3f6ff;
+    color: #6373cb;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-toggle-view:hover {
+    border-color: #9aa8f1;
+    color: #4b5dbc;
+    box-shadow: 0 0 0 3px rgba(154, 168, 241, 0.2);
+}
+
+.btn-toggle-view.is-calendar-active {
+    background: #667eea;
     border-color: #667eea;
-    color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    color: #fff;
+}
+
+.btn-toggle-view svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-clear-filters:hover {
+    border-color: #efb1b1;
+    color: #dc8d8d;
+    box-shadow: 0 0 0 3px rgba(239, 177, 177, 0.2);
 }
 
 .btn-clear-filters svg {
@@ -162,6 +284,17 @@ th {
     margin-bottom: 10px;
 }
 
+.details-grid > .details-block:first-child,
+.details-grid > .details-full-results-block,
+.details-grid > .details-pie-block {
+    height: 520px;
+    min-height: 520px;
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
 .details-pie-panel {
     background: #fff;
     border: 1px solid #e8eaf4;
@@ -170,6 +303,10 @@ th {
     width: 100%;
     overflow: hidden;
     box-sizing: border-box;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .details-pie-container {
@@ -204,7 +341,9 @@ th {
     margin-top: 10px;
     display: grid;
     gap: 6px;
-    max-height: 180px;
+    max-height: none;
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     padding-right: 10px;
@@ -240,6 +379,9 @@ th {
 .details-podium {
     display: grid;
     gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
 }
 
 .details-podium-card {
@@ -372,6 +514,30 @@ th {
 .results-mini-main {
     display: grid;
     gap: 2px;
+    width: 100%;
+}
+
+.results-mini-main strong,
+.results-mini-main span {
+    display: block;
+    width: 100%;
+}
+
+.results-mini-main strong {
+    overflow-wrap: anywhere;
+}
+
+.details-full-results-block {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.details-full-results-block .results-mini {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    max-height: none;
 }
 
 /* ============================================================
@@ -740,6 +906,22 @@ th {
         word-break: break-word;
     }
 
+    #tournamentsTable .details-row {
+        padding: 0;
+        border: none;
+        box-shadow: none;
+        background: transparent;
+    }
+
+    #tournamentsTable .details-row .details-row-cell {
+        padding: 0;
+    }
+
+    #tournamentsTable .details-row .details-row-cell:before {
+        content: none;
+        display: none;
+    }
+
     #tournamentsTable td:before {
         content: attr(data-label);
         font-weight: 600;
@@ -757,6 +939,11 @@ th {
         content: ""; 
     }
 
+    #tournamentsTable td:nth-child(5),
+    #tournamentsTable td:nth-child(6) {
+        text-align: left;
+    }
+
     .filters-row {
         grid-template-columns: 1fr;
         gap: 10px;
@@ -764,6 +951,10 @@ th {
 
     .filter-label-spacer {
         display: none;
+    }
+
+    .filter-actions {
+        justify-content: flex-start;
     }
 
     /* Botão de edição mobile */
@@ -792,6 +983,14 @@ th {
 
     .details-grid {
         grid-template-columns: 1fr;
+    }
+
+    .details-grid > .details-block:first-child,
+    .details-grid > .details-full-results-block,
+    .details-grid > .details-pie-block {
+        height: auto;
+        min-height: 0;
+        max-height: none;
     }
 
     .details-pie-panel {

@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tournament List - Digimon TCG</title>
-    <link rel="icon" type="image/png" href="../../favicon.png">
+    <link rel="icon" type="image/png" href="../../icons/favicon/favicon.png">
     <link rel="stylesheet" href="../../styles.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="calendar-view/calendar.css">
     <link rel="stylesheet" href="../edit-tournament/styles.css">
 </head>
 <body>
@@ -23,26 +24,41 @@
         <div class="filters-row">
             <div class="form-group filter-group">
                 <label for="filterStore">Store</label>
-                <select id="filterStore">
+                <select id="filterStore" class="filter-select">
                     <option value="">All stores</option>
                 </select>
             </div>
             <div class="form-group filter-group">
                 <label for="filterTournamentName">Tournament Name</label>
-                <select id="filterTournamentName">
+                <select id="filterTournamentName" class="filter-select">
                     <option value="">All names</option>
                 </select>
             </div>
             <div class="form-group filter-group">
                 <label for="filterInstagram">Instagram Link</label>
-                <select id="filterInstagram">
+                <select id="filterInstagram" class="filter-select">
                     <option value="">All</option>
                     <option value="with_link">With link</option>
                     <option value="without_link">Without link</option>
                 </select>
             </div>
+            <div class="form-group filter-group">
+                <label for="filterMonthYear">Month/Year</label>
+                <select id="filterMonthYear" class="filter-select">
+                    <option value="">All months</option>
+                </select>
+            </div>
+            <div class="form-group filter-group per-page-filter">
+                <select id="perPageSelect" aria-label="Items per page"></select>
+            </div>
             <div class="filter-actions">
                 <span class="filter-label-spacer" aria-hidden="true">Instagram Link</span>
+                <button type="button" id="btnToggleView" class="btn-toggle-view" title="Toggle Calendar/List" aria-label="Toggle Calendar/List">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <path d="M8 2v4M16 2v4M3 10h18"/>
+                    </svg>
+                </button>
                 <button type="button" id="btnClearFilters" class="btn-clear-filters" title="Clear Filters" aria-label="Clear Filters">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M3 4h18"/>
@@ -54,40 +70,69 @@
             </div>
         </div>
 
-        <table id="tournamentsTable">
-            <thead>
-                <tr>
+        <div id="listViewContainer">
+            <table id="tournamentsTable">
+                <thead>
+                    <tr>
                     <th>
                         <button type="button" class="sort-button" data-sort-field="tournament_date">
-                            Tournament Date <span class="sort-indicator" data-sort-indicator="tournament_date">▼</span>
+                            <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <path d="M8 2v4M16 2v4M3 10h18"/>
+                            </svg>
+                            Tournament Date <span class="sort-indicator" data-sort-indicator="tournament_date">?</span>
                         </button>
                     </th>
-                    <th>Store</th>
-                    <th>Tournament Name</th>
+                    <th>
+                        <span class="th-with-icon">
+                            <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M3 10l2-6h14l2 6"/>
+                                <path d="M4 10h16v10H4z"/>
+                                <path d="M9 20v-6h6v6"/>
+                            </svg>
+                            Store
+                        </span>
+                    </th>
+                    <th>
+                        <span class="th-with-icon">
+                            <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <circle cx="12" cy="14" r="4"/>
+                                <path d="M10 3h4l-1 5h-2z"/>
+                                <path d="M9 3l-3 5 3 1"/>
+                                <path d="M15 3l3 5-3 1"/>
+                            </svg>
+                            Tournament Name
+                        </span>
+                    </th>
                     <th>
                         <button type="button" class="sort-button" data-sort-field="total_players">
-                            Total Players <span class="sort-indicator" data-sort-indicator="total_players">⇅</span>
+                            <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <rect x="4" y="5" width="16" height="14" rx="2"/>
+                                <path d="M8 9h8M8 13h8"/>
+                            </svg>
+                            Total Players <span class="sort-indicator" data-sort-indicator="total_players">?</span>
                         </button>
                     </th>
                     <th>
-                        <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 5px; display: inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37Z"/>
-                            <circle cx="17.5" cy="6.5" r="1.5"/>
-                        </svg>
-                        Link
+                        <span class="th-with-icon">
+                            <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L10 5"/>
+                                <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 1 0 7.07 7.07L14 19"/>
+                            </svg>
+                            Link
+                        </span>
                     </th>
                     <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
 
-        <div class="pagination" id="pagination"></div>
-        <div id="tournamentDetailsSection" class="tournament-details-section" style="display: none;">
-            <h2>Tournament Details</h2>
-            <div id="tournamentDetailsContent"></div>
+            <div class="pagination" id="pagination"></div>
         </div>
+
+        <div id="calendarViewContainer" class="calendar-view-container is-hidden"></div>
+        <div id="calendarTournamentDetails" class="calendar-tournament-details is-hidden"></div>
     </div>
 
     <!-- Create Modal -->
@@ -190,7 +235,16 @@
         </div>
     </div>
 
+    <script src="calendar-view/calendar.js"></script>
     <script src="script.js"></script>
     <script src="../edit-tournament/modal.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
