@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DigiStats - Tournaments</title>
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="icons/favicon/favicon.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="torneios/list-tournaments/styles.css">
+    <link rel="stylesheet" href="torneios/list-tournaments/calendar-view/calendar.css">
     <link rel="stylesheet" href="torneios/edit-tournament/styles.css">
 </head>
 <body>
@@ -64,6 +65,12 @@
             </div>
             <div class="filter-actions">
                 <span class="filter-label-spacer" aria-hidden="true">Instagram Link</span>
+                <button type="button" id="btnToggleView" class="btn-toggle-view" title="Toggle Calendar/List" aria-label="Toggle Calendar/List">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <path d="M8 2v4M16 2v4M3 10h18"/>
+                    </svg>
+                </button>
                 <button type="button" id="btnClearFilters" class="btn-clear-filters" title="Clear Filters" aria-label="Clear Filters">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M3 4h18"/>
@@ -75,9 +82,10 @@
             </div>
         </div>
 
-        <table id="tournamentsTable">
-            <thead>
-                <tr>
+        <div id="listViewContainer">
+            <table id="tournamentsTable">
+                <thead>
+                    <tr>
                     <th>
                         <button type="button" class="sort-button" data-sort-field="tournament_date">
                             <svg class="th-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -127,12 +135,15 @@
                         </span>
                     </th>
                     <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="pagination" id="pagination"></div>
+        </div>
 
-        <div class="pagination" id="pagination"></div>
+        <div id="calendarViewContainer" class="calendar-view-container is-hidden"></div>
+        <div id="calendarTournamentDetails" class="calendar-tournament-details is-hidden"></div>
     </div>
 
     <div id="createModal" class="modal-overlay">
@@ -233,10 +244,12 @@
         </div>
     </div>
 
+    <script src="torneios/list-tournaments/calendar-view/calendar.js"></script>
     <script src="torneios/list-tournaments/script.js"></script>
     <script src="torneios/edit-tournament/modal.js"></script>
 </body>
 </html>
+
 
 
 

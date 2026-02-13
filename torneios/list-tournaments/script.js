@@ -20,12 +20,13 @@ const TOURNAMENT_NAME_OPTIONS = [
 
 const SORT_STORAGE_KEY = "tournamentsSort";
 const PER_PAGE_STORAGE_KEY = "tournamentsPerPage";
+const VIEW_STORAGE_KEY = "tournamentsViewMode";
 const DEFAULT_SORT = { field: "tournament_date", direction: "desc" };
 const SORTABLE_FIELDS = ["tournament_date", "total_players"];
 const SORT_DIRECTIONS = ["asc", "desc"];
 const MONTH_NAMES_PT = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ];
 
 let tournaments = [];
@@ -39,6 +40,8 @@ let createPlayers = [];
 let createDecks = [];
 let createResults = [];
 let selectedTournamentId = null;
+let currentViewMode = getSavedViewMode();
+let calendarMonthKey = "";
 
 // ============================================================
 // FUNÃƒâ€¡ÃƒÆ’O DE FORMATAÃƒâ€¡ÃƒÆ’O DE DATA
@@ -75,10 +78,40 @@ function savePerPagePreference() {
     localStorage.setItem(PER_PAGE_STORAGE_KEY, String(perPage));
 }
 
+function getSavedViewMode() {
+    const saved = localStorage.getItem(VIEW_STORAGE_KEY);
+    return saved === "calendar" ? "calendar" : "list";
+}
+
+function saveViewMode() {
+    localStorage.setItem(VIEW_STORAGE_KEY, currentViewMode);
+}
+
 function formatDate(dateString) {
     if (!dateString) return "-";
     const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
+}
+
+function getAssetPrefix() {
+    return window.location.pathname.includes("/torneios/list-tournaments/") ? "../../" : "";
+}
+
+function normalizeStoreName(name) {
+    return String(name || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+}
+
+function resolveStoreIcon(storeName) {
+    const base = `${getAssetPrefix()}icons/stores/`;
+    const normalized = normalizeStoreName(storeName);
+    if (normalized.includes("gladiator")) return `${base}Gladiators.png`;
+    if (normalized.includes("meruru")) return `${base}Meruru.svg`;
+    if (normalized.includes("taverna")) return `${base}Taverna.png`;
+    if (normalized.includes("tcgbr") || normalized.includes("tcg br")) return `${base}TCGBR.png`;
+    return `${base}images.png`;
 }
 
 // ============================================================
@@ -86,6 +119,7 @@ function formatDate(dateString) {
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     setupPerPageSelector();
+    setupViewToggle();
     await loadTournaments();
     setupFilters();
     setupSorting();
@@ -142,13 +176,19 @@ function setupFilters() {
     if (filterStore) filterStore.addEventListener("change", applyFilters);
     if (filterTournamentName) filterTournamentName.addEventListener("change", applyFilters);
     if (filterInstagram) filterInstagram.addEventListener("change", applyFilters);
-    if (filterMonthYear) filterMonthYear.addEventListener("change", applyFilters);
+    if (filterMonthYear) {
+        filterMonthYear.addEventListener("change", () => {
+            calendarMonthKey = filterMonthYear.value || "";
+            applyFilters();
+        });
+    }
     if (btnClearFilters) {
         btnClearFilters.addEventListener("click", () => {
             if (filterStore) filterStore.value = "";
             if (filterTournamentName) filterTournamentName.value = "";
             if (filterInstagram) filterInstagram.value = "";
             if (filterMonthYear) filterMonthYear.value = "";
+            calendarMonthKey = "";
             applyFilters();
         });
     }
@@ -241,8 +281,206 @@ function applyFilters() {
         clearTournamentDetails();
     }
 
+    renderCurrentView();
+}
+
+function setupViewToggle() {
+    const button = document.getElementById("btnToggleView");
+    if (!button) return;
+    button.addEventListener("click", () => {
+        currentViewMode = currentViewMode === "list" ? "calendar" : "list";
+        saveViewMode();
+        if (currentViewMode === "calendar") ensureCalendarMonthKey();
+        renderCurrentView();
+    });
+}
+
+function getAvailableCalendarMonthKeys() {
+    return Array.from(
+        new Set(
+            (filteredTournaments || [])
+                .map((t) => getMonthYearKey(t.tournament_date))
+                .filter(Boolean)
+        )
+    ).sort((a, b) => a.localeCompare(b));
+}
+
+function ensureCalendarMonthKey() {
+    const available = getAvailableCalendarMonthKeys();
+    if (!available.length) {
+        calendarMonthKey = "";
+        return;
+    }
+
+    const selected = document.getElementById("filterMonthYear")?.value || "";
+    if (selected && available.includes(selected)) {
+        calendarMonthKey = selected;
+        return;
+    }
+
+    if (calendarMonthKey && available.includes(calendarMonthKey)) return;
+
+    calendarMonthKey = available[available.length - 1];
+}
+
+function moveCalendarMonth(step) {
+    const available = getAvailableCalendarMonthKeys();
+    if (!available.length) return;
+    const currentIndex = available.indexOf(calendarMonthKey);
+    if (currentIndex < 0) {
+        calendarMonthKey = available[available.length - 1];
+        renderCalendarView();
+        return;
+    }
+    const nextIndex = currentIndex + step;
+    if (nextIndex < 0 || nextIndex >= available.length) return;
+    calendarMonthKey = available[nextIndex];
+    renderCalendarView();
+}
+
+function moveCalendarYear(step) {
+    const available = getAvailableCalendarMonthKeys();
+    if (!available.length || !calendarMonthKey) return;
+
+    const [yearStr, monthStr] = calendarMonthKey.split("-");
+    const currentYear = Number(yearStr);
+    const currentMonth = Number(monthStr);
+    if (!Number.isInteger(currentYear) || !Number.isInteger(currentMonth)) return;
+
+    const targetYears = Array.from(new Set(available.map((key) => Number(key.split("-")[0]))))
+        .filter((year) => Number.isInteger(year))
+        .sort((a, b) => a - b);
+
+    const targetYear = step < 0
+        ? [...targetYears].reverse().find((year) => year < currentYear)
+        : targetYears.find((year) => year > currentYear);
+    if (!targetYear) return;
+
+    const monthsInYear = available
+        .filter((key) => Number(key.split("-")[0]) === targetYear)
+        .map((key) => ({ key, month: Number(key.split("-")[1]) }))
+        .sort((a, b) => a.month - b.month);
+    if (!monthsInYear.length) return;
+
+    let best = monthsInYear[0];
+    let bestDistance = Math.abs(best.month - currentMonth);
+    for (const item of monthsInYear) {
+        const dist = Math.abs(item.month - currentMonth);
+        if (dist < bestDistance) {
+            best = item;
+            bestDistance = dist;
+        }
+    }
+
+    calendarMonthKey = best.key;
+    renderCalendarView();
+}
+
+function renderCurrentView() {
+    const listContainer = document.getElementById("listViewContainer");
+    const calendarContainer = document.getElementById("calendarViewContainer");
+    const calendarDetails = document.getElementById("calendarTournamentDetails");
+    const toggleButton = document.getElementById("btnToggleView");
+    const perPageField = document.querySelector(".per-page-filter");
+
+    if (currentViewMode === "calendar") {
+        if (listContainer) listContainer.classList.add("is-hidden");
+        if (calendarContainer) calendarContainer.classList.remove("is-hidden");
+        if (calendarDetails) calendarDetails.classList.remove("is-hidden");
+        if (toggleButton) toggleButton.classList.add("is-calendar-active");
+        updateToggleViewButton();
+        if (perPageField) perPageField.classList.add("is-hidden");
+        ensureCalendarMonthKey();
+        renderCalendarView();
+        return;
+    }
+
+    if (listContainer) listContainer.classList.remove("is-hidden");
+    if (calendarContainer) calendarContainer.classList.add("is-hidden");
+    if (calendarDetails) {
+        calendarDetails.classList.add("is-hidden");
+        calendarDetails.innerHTML = "";
+    }
+    if (toggleButton) toggleButton.classList.remove("is-calendar-active");
+    updateToggleViewButton();
+    if (perPageField) perPageField.classList.remove("is-hidden");
     renderTable();
     renderPagination();
+}
+
+function updateToggleViewButton() {
+    const button = document.getElementById("btnToggleView");
+    if (!button) return;
+
+    if (currentViewMode === "calendar") {
+        button.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 6h18"/>
+                <path d="M3 12h18"/>
+                <path d="M3 18h18"/>
+            </svg>
+        `;
+        button.title = "Switch to list";
+        button.setAttribute("aria-label", "Switch to list");
+        return;
+    }
+
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <path d="M8 2v4M16 2v4M3 10h18"/>
+        </svg>
+    `;
+    button.title = "Switch to calendar";
+    button.setAttribute("aria-label", "Switch to calendar");
+}
+
+function renderCalendarView() {
+    const container = document.getElementById("calendarViewContainer");
+    if (!container || !window.TournamentCalendarView) return;
+    ensureCalendarMonthKey();
+    const available = getAvailableCalendarMonthKeys();
+    const currentIndex = available.indexOf(calendarMonthKey);
+    const currentYear = Number((calendarMonthKey || "").split("-")[0]);
+    const years = Array.from(new Set(available.map((key) => Number(key.split("-")[0]))))
+        .filter((year) => Number.isInteger(year))
+        .sort((a, b) => a - b);
+    const hasPrevYear = years.some((year) => year < currentYear);
+    const hasNextYear = years.some((year) => year > currentYear);
+
+    window.TournamentCalendarView.render(container, {
+        monthKey: calendarMonthKey,
+        tournaments: filteredTournaments,
+        monthNames: MONTH_NAMES_PT,
+        hasPrevMonth: currentIndex > 0,
+        hasNextMonth: currentIndex >= 0 && currentIndex < available.length - 1,
+        hasPrevYear,
+        hasNextYear,
+        onPrev: () => moveCalendarMonth(-1),
+        onNext: () => moveCalendarMonth(1),
+        onPrevYear: () => moveCalendarYear(-1),
+        onNextYear: () => moveCalendarYear(1),
+        onSelectEvent: (eventData) => openCalendarTournamentDetails(eventData),
+        onSelectDay: (dateString) => openCreateTournamentModal(dateString)
+    });
+}
+
+function openCalendarTournamentDetails(eventData) {
+    const container = document.getElementById("calendarTournamentDetails");
+    if (!container || !eventData) return;
+
+    container.classList.remove("is-hidden");
+    container.innerHTML = `<div class="details-block">Loading details...</div>`;
+
+    const tournament = {
+        id: eventData.id || "",
+        store_id: eventData.storeId || "",
+        tournament_date: eventData.tournamentDate || "",
+        tournament_name: eventData.tournamentName || "Tournament",
+        total_players: eventData.totalPlayers || "",
+        store: { name: eventData.storeName || "Store" }
+    };
+    renderTournamentDetails(tournament, container);
 }
 
 function setupPerPageSelector() {
@@ -351,7 +589,19 @@ function renderTable() {
         
         const td2 = document.createElement("td");
         td2.setAttribute("data-label", "Loja:");
-        td2.textContent = t.store?.name || "-";
+        td2.classList.add("table-store-cell");
+        const storeName = t.store?.name || "-";
+        const storeContent = document.createElement("span");
+        storeContent.className = "table-store-content";
+        const storeIcon = document.createElement("img");
+        storeIcon.className = "table-store-icon";
+        storeIcon.src = resolveStoreIcon(storeName);
+        storeIcon.alt = storeName;
+        const storeText = document.createElement("span");
+        storeText.textContent = storeName;
+        storeContent.appendChild(storeIcon);
+        storeContent.appendChild(storeText);
+        td2.appendChild(storeContent);
         
         const td3 = document.createElement("td");
         td3.setAttribute("data-label", "Nome:");
@@ -437,10 +687,11 @@ function renderPagination() {
 // ============================================================
 // MODAL DE CRIAÃƒâ€¡ÃƒÆ’O
 // ============================================================
-async function openCreateTournamentModal() {
+async function openCreateTournamentModal(defaultDate = "") {
     // Limpa o formulÃƒÂ¡rio
     document.getElementById("createStoreSelect").value = "";
-    document.getElementById("createTournamentDate").value = new Date().toISOString().split('T')[0];
+    const safeDate = /^\d{4}-\d{2}-\d{2}$/.test(defaultDate) ? defaultDate : new Date().toISOString().split('T')[0];
+    document.getElementById("createTournamentDate").value = safeDate;
     document.getElementById("createTournamentName").value = "";
     document.getElementById("createTotalPlayers").value = "";
     document.getElementById("createInstagramLink").value = "";
@@ -701,9 +952,9 @@ function setupInteractivePieSlices(rootElement, tournamentId) {
     });
 }
 
-async function renderTournamentDetails(tournament) {
+async function renderTournamentDetails(tournament, targetContainer = null) {
     const tournamentId = String(tournament.id);
-    let content = getDetailsContainer(tournamentId);
+    let content = targetContainer || getDetailsContainer(tournamentId);
     if (!content) return;
     content.innerHTML = `<div class="details-block">Loading details...</div>`;
 
@@ -788,9 +1039,11 @@ async function renderTournamentDetails(tournament) {
             `).join("")
             : `<div class="results-mini-item"><div class="results-mini-main">No results found.</div></div>`;
 
-        if (String(selectedTournamentId) !== tournamentId) return;
-        content = getDetailsContainer(tournamentId);
-        if (!content) return;
+        if (!targetContainer) {
+            if (String(selectedTournamentId) !== tournamentId) return;
+            content = getDetailsContainer(tournamentId);
+            if (!content) return;
+        }
 
         content.innerHTML = `
             ${header}
@@ -812,12 +1065,14 @@ async function renderTournamentDetails(tournament) {
                 </div>
             </div>
         `;
-        setupInteractivePieSlices(content, tournament.id);
+        setupInteractivePieSlices(content, tournament.id || `${tournament.store_id}-${tournament.tournament_date}`);
     } catch (err) {
         console.error(err);
-        if (String(selectedTournamentId) !== tournamentId) return;
-        content = getDetailsContainer(tournamentId);
-        if (!content) return;
+        if (!targetContainer) {
+            if (String(selectedTournamentId) !== tournamentId) return;
+            content = getDetailsContainer(tournamentId);
+            if (!content) return;
+        }
         content.innerHTML = `<div class="details-block">Falha ao carregar detalhes do torneio.</div>`;
     }
 }
