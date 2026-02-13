@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Submit do formulário de criação
     document.getElementById("createTournamentForm").addEventListener("submit", createTournamentFormSubmit);
     document.getElementById("btnAddResultRow").addEventListener("click", addCreateResultRow);
+    document.getElementById("createTotalPlayers").addEventListener("input", syncCreateResultsByTotal);
     
     // Submit do formulário de edição
     document.getElementById("editTournamentForm").addEventListener("submit", editTournamentFormSubmit);
@@ -161,7 +162,7 @@ async function openCreateTournamentModal() {
     document.getElementById("createStoreSelect").value = "";
     document.getElementById("createTournamentDate").value = new Date().toISOString().split('T')[0];
     document.getElementById("createTournamentName").value = "";
-    document.getElementById("createTotalPlayers").value = "0";
+    document.getElementById("createTotalPlayers").value = "";
     document.getElementById("createInstagramLink").value = "";
     document.getElementById("createInstagramPost").checked = false;
     createResults = [];
@@ -187,6 +188,24 @@ async function openCreateTournamentModal() {
 function closeCreateModal() {
     document.getElementById("createModal").classList.remove("active");
     createResults = [];
+    renderCreateResultsRows();
+}
+
+function syncCreateResultsByTotal() {
+    const totalInput = document.getElementById("createTotalPlayers");
+    const qty = parseInt(totalInput.value, 10);
+
+    if (!Number.isInteger(qty) || qty < 1) {
+        createResults = [];
+        renderCreateResultsRows();
+        return;
+    }
+
+    const next = [];
+    for (let i = 0; i < Math.min(qty, 36); i++) {
+        next.push(createResults[i] || { player_id: "", deck_id: "" });
+    }
+    createResults = next;
     renderCreateResultsRows();
 }
 
@@ -254,7 +273,7 @@ function renderCreateResultsRows() {
 
     if (createResults.length === 0) {
         container.innerHTML = "";
-        document.getElementById("createTotalPlayers").value = "0";
+        document.getElementById("createTotalPlayers").value = "";
         return;
     }
 

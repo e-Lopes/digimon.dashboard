@@ -126,7 +126,7 @@ function renderEditResultsRows() {
 
     if (editResults.length === 0) {
         container.innerHTML = "";
-        document.getElementById("editTotalPlayers").value = "0";
+        document.getElementById("editTotalPlayers").value = "";
         return;
     }
 
@@ -155,6 +155,24 @@ function renderEditResultsRows() {
     document.getElementById("editTotalPlayers").value = String(editResults.length);
 }
 
+function syncEditResultsByTotal() {
+    const totalInput = document.getElementById("editTotalPlayers");
+    const qty = parseInt(totalInput.value, 10);
+
+    if (!Number.isInteger(qty) || qty < 1) {
+        editResults = [];
+        renderEditResultsRows();
+        return;
+    }
+
+    const next = [];
+    for (let i = 0; i < Math.min(qty, 36); i++) {
+        next.push(editResults[i] || { id: null, player_id: "", deck_id: "" });
+    }
+    editResults = next;
+    renderEditResultsRows();
+}
+
 function addEditResultRow() {
     if (editResults.length >= 36) {
         alert("O limite maximo e 36 jogadores neste modal.");
@@ -177,6 +195,7 @@ function updateEditResultField(index, field, value) {
 
 function openEditModal() {
     document.getElementById("btnAddEditResultRow").onclick = addEditResultRow;
+    document.getElementById("editTotalPlayers").oninput = syncEditResultsByTotal;
     document.getElementById("editModal").classList.add("active");
 }
 
