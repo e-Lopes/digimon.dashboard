@@ -1,4 +1,4 @@
-const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
+﻿const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
 const headers = {
     "apikey": SUPABASE_ANON_KEY,
@@ -15,45 +15,45 @@ let createResults = [];
 let selectedTournamentId = null;
 
 // ============================================================
-// FUNÇÃO DE FORMATAÇÃO DE DATA
+// FUNÃƒâ€¡ÃƒÆ’O DE FORMATAÃƒâ€¡ÃƒÆ’O DE DATA
 // ============================================================
 function formatDate(dateString) {
-    if (!dateString) return "—";
+    if (!dateString) return "-";
     const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
 }
 
 // ============================================================
-// INICIALIZAÇÃO - DOMContentLoaded
+// INICIALIZAÃƒâ€¡ÃƒÆ’O - DOMContentLoaded
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     await loadTournaments();
     renderTable();
     renderPagination();
     
-    // Event listeners para modal de criação
+    // Event listeners para modal de criaÃƒÂ§ÃƒÂ£o
     document.getElementById("btnCreateTournament").addEventListener("click", openCreateTournamentModal);
     
-    // Fechar modal de criação ao clicar fora dele
+    // Fechar modal de criaÃƒÂ§ÃƒÂ£o ao clicar fora dele
     document.getElementById("createModal").addEventListener("click", (e) => {
         if (e.target === document.getElementById("createModal")) {
             closeCreateModal();
         }
     });
 
-    // Fechar modal de edição ao clicar fora dele
+    // Fechar modal de ediÃƒÂ§ÃƒÂ£o ao clicar fora dele
     document.getElementById("editModal").addEventListener("click", (e) => {
         if (e.target === document.getElementById("editModal")) {
             closeEditModal();
         }
     });
     
-    // Submit do formulário de criação
+    // Submit do formulÃƒÂ¡rio de criaÃƒÂ§ÃƒÂ£o
     document.getElementById("createTournamentForm").addEventListener("submit", createTournamentFormSubmit);
     document.getElementById("btnAddResultRow").addEventListener("click", addCreateResultRow);
     document.getElementById("createTotalPlayers").addEventListener("input", syncCreateResultsByTotal);
     
-    // Submit do formulário de edição
+    // Submit do formulÃƒÂ¡rio de ediÃƒÂ§ÃƒÂ£o
     document.getElementById("editTournamentForm").addEventListener("submit", editTournamentFormSubmit);
 });
 
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ============================================================
 async function loadTournaments() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament?select=id,store_id,tournament_date,store:stores(name),tournament_name,total_players,instagram,instagram_link&order=tournament_date.desc`, { headers });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament?select=id,store_id,tournament_date,store:stores(name),tournament_name,total_players,instagram_link&order=tournament_date.desc`, { headers });
         if (!res.ok) throw new Error("Erro ao carregar torneios.");
         tournaments = await res.json();
     } catch (err) {
@@ -72,7 +72,7 @@ async function loadTournaments() {
 }
 
 // ============================================================
-// RENDERIZAÇÃO DA TABELA
+// RENDERIZAÃƒâ€¡ÃƒÆ’O DA TABELA
 // ============================================================
 function renderTable() {
     const tbody = document.querySelector("#tournamentsTable tbody");
@@ -88,7 +88,7 @@ function renderTable() {
         if (selectedTournamentId && String(selectedTournamentId) === String(t.id)) {
             tr.classList.add("is-active");
         }
-        const instagramLink = t.instagram_link ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">🔗 Abrir</a>` : "—";
+        const instagramLink = t.instagram_link ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">Abrir</a>` : "-";
         
         const td1 = document.createElement("td");
         td1.setAttribute("data-label", "Data:");
@@ -96,35 +96,30 @@ function renderTable() {
         
         const td2 = document.createElement("td");
         td2.setAttribute("data-label", "Loja:");
-        td2.textContent = t.store?.name || "—";
+        td2.textContent = t.store?.name || "-";
         
         const td3 = document.createElement("td");
         td3.setAttribute("data-label", "Nome:");
-        td3.textContent = t.tournament_name || "—";
+        td3.textContent = t.tournament_name || "-";
         
         const td4 = document.createElement("td");
         td4.setAttribute("data-label", "Players:");
-        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : "—";
+        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : "-";
         
         const td5 = document.createElement("td");
-        td5.setAttribute("data-label", "Postado:");
-        td5.textContent = t.instagram ? "Postado" : "Não postado";
-        
+        td5.setAttribute("data-label", "Instagram:");
+        td5.innerHTML = instagramLink;
+
         const td6 = document.createElement("td");
-        td6.setAttribute("data-label", "Instagram:");
-        td6.innerHTML = instagramLink;
-        
-        const td7 = document.createElement("td");
-        td7.setAttribute("data-label", "Ações:");
-        td7.innerHTML = `<button class="btn-edit" onclick="event.stopPropagation(); editTournament('${t.id}')">✏️ Edit</button>`;
-        
+        td6.setAttribute("data-label", "Acoes:");
+        td6.innerHTML = `<button class="btn-edit" onclick="event.stopPropagation(); editTournament('${t.id}')">Edit</button>`;
+
         tr.appendChild(td1);
         tr.appendChild(td2);
         tr.appendChild(td3);
         tr.appendChild(td4);
         tr.appendChild(td5);
         tr.appendChild(td6);
-        tr.appendChild(td7);
         tr.addEventListener("click", () => toggleTournamentDetails(t));
         
         tbody.appendChild(tr);
@@ -132,13 +127,13 @@ function renderTable() {
 
     if (slice.length === 0) {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td colspan="7" style="text-align:center;">Nenhum torneio encontrado</td>`;
+        tr.innerHTML = `<td colspan="6" style="text-align:center;">Nenhum torneio encontrado</td>`;
         tbody.appendChild(tr);
     }
 }
 
 // ============================================================
-// PAGINAÇÃO
+// PAGINAÃƒâ€¡ÃƒÆ’O
 // ============================================================
 function renderPagination() {
     const totalPages = Math.ceil(tournaments.length / perPage);
@@ -161,16 +156,16 @@ function renderPagination() {
 }
 
 // ============================================================
-// MODAL DE CRIAÇÃO
+// MODAL DE CRIAÃƒâ€¡ÃƒÆ’O
 // ============================================================
 async function openCreateTournamentModal() {
-    // Limpa o formulário
+    // Limpa o formulÃƒÂ¡rio
     document.getElementById("createStoreSelect").value = "";
     document.getElementById("createTournamentDate").value = new Date().toISOString().split('T')[0];
     document.getElementById("createTournamentName").value = "";
     document.getElementById("createTotalPlayers").value = "";
     document.getElementById("createInstagramLink").value = "";
-    document.getElementById("createInstagramPost").checked = false;
+
     createResults = [];
     
     // Carrega dados base para o modal
@@ -182,7 +177,7 @@ async function openCreateTournamentModal() {
         ]);
         renderCreateResultsRows();
     } catch (err) {
-        console.error("Erro ao abrir modal de criação:", err);
+        console.error("Erro ao abrir modal de criaÃƒÂ§ÃƒÂ£o:", err);
         alert("Falha ao carregar dados de players/decks/lojas.");
         return;
     }
@@ -549,7 +544,7 @@ async function loadDecksToCreate() {
 
 function addCreateResultRow() {
     if (createResults.length >= 36) {
-        alert("O limite máximo é 36 jogadores neste modal.");
+        alert("O limite maximo e 36 jogadores neste modal.");
         return;
     }
 
@@ -616,7 +611,7 @@ async function createTournamentFormSubmit(e) {
     const submitBtn = document.querySelector("#createTournamentForm button[type='submit']");
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = "⏳ Criando...";
+    submitBtn.textContent = "Criando...";
 
     try {
         const totalPlayers = createResults.length;
@@ -626,12 +621,11 @@ async function createTournamentFormSubmit(e) {
             tournament_name: document.getElementById("createTournamentName").value.trim(),
             total_players: totalPlayers,
             instagram_link: document.getElementById("createInstagramLink").value.trim(),
-            instagram: document.getElementById("createInstagramPost").checked
         };
 
         const hasInvalidResult = createResults.some(r => !r.player_id || !r.deck_id);
         if (!payload.store_id || !payload.tournament_date || !payload.tournament_name || payload.total_players < 1 || hasInvalidResult) {
-            alert("Por favor preencha todos os campos obrigatórios");
+            alert("Por favor preencha todos os campos obrigatorios");
             return;
         }
         
@@ -718,10 +712,10 @@ async function createTournamentFormSubmit(e) {
         renderPagination();
         closeCreateModal();
         
-        // Limpa o formulário
+        // Limpa o formulÃƒÂ¡rio
         document.getElementById("createTournamentForm").reset();
         
-        alert("✅ Torneio cadastrado com sucesso!");
+        alert("Torneio cadastrado com sucesso!");
     } catch (err) {
         console.error("Erro completo:", err);
         alert("Falha ao cadastrar torneio: " + err.message);
@@ -730,3 +724,6 @@ async function createTournamentFormSubmit(e) {
         submitBtn.textContent = originalText;
     }
 }
+
+
+

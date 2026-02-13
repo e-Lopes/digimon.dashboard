@@ -48,7 +48,6 @@ document.getElementById("tournamentForm").addEventListener("submit", async (e) =
     const tournament_name = document.getElementById("tournamentName").value.trim();
     const total_players = parseInt(document.getElementById("totalPlayers").value, 10);
     const instagram_link = document.getElementById("instagramLink").value.trim();
-    const instagram = document.getElementById("instagramPost").checked;
 
     if (!store_id || !tournament_date || !tournament_name || !Number.isInteger(total_players) || total_players < 1) {
         alert("Por favor preencha todos os campos obrigatórios.");
@@ -58,7 +57,7 @@ document.getElementById("tournamentForm").addEventListener("submit", async (e) =
     try {
         document.getElementById("loading").style.display = "block";
 
-        const payload = { store_id, tournament_date, tournament_name, total_players, instagram_link, instagram };
+        const payload = { store_id, tournament_date, tournament_name, total_players, instagram_link };
         const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament`, {
             method: "POST",
             headers,

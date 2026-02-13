@@ -35,7 +35,6 @@ async function loadEditFormData(id) {
         document.getElementById("editTournamentName").value = data.tournament_name || "";
         document.getElementById("editTotalPlayers").value = "0";
         document.getElementById("editInstagramLink").value = data.instagram_link || "";
-        document.getElementById("editInstagramPost").checked = data.instagram || false;
 
         await Promise.all([
             loadStoresToEdit(data.store_id),
@@ -220,8 +219,7 @@ async function editTournamentFormSubmit(e) {
             tournament_date: document.getElementById("editTournamentDate").value,
             tournament_name: document.getElementById("editTournamentName").value.trim(),
             total_players: totalPlayers,
-            instagram_link: document.getElementById("editInstagramLink").value.trim(),
-            instagram: document.getElementById("editInstagramPost").checked
+            instagram_link: document.getElementById("editInstagramLink").value.trim()
         };
 
         const hasInvalidResult = editResults.some((r) => !r.player_id || !r.deck_id);
