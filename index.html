@@ -35,26 +35,31 @@
         <div class="filters-row">
             <div class="form-group filter-group">
                 <label for="filterStore">Store</label>
-                <select id="filterStore">
+                <select id="filterStore" class="filter-select">
                     <option value="">All stores</option>
                 </select>
             </div>
             <div class="form-group filter-group">
                 <label for="filterTournamentName">Tournament Name</label>
-                <select id="filterTournamentName">
+                <select id="filterTournamentName" class="filter-select">
                     <option value="">All names</option>
                 </select>
             </div>
             <div class="form-group filter-group">
                 <label for="filterInstagram">Instagram Link</label>
-                <select id="filterInstagram">
+                <select id="filterInstagram" class="filter-select">
                     <option value="">All</option>
                     <option value="with_link">With link</option>
                     <option value="without_link">Without link</option>
                 </select>
             </div>
+            <div class="form-group filter-group">
+                <label for="filterMonthYear">Month/Year</label>
+                <select id="filterMonthYear" class="filter-select">
+                    <option value="">All months</option>
+                </select>
+            </div>
             <div class="form-group filter-group per-page-filter">
-                
                 <select id="perPageSelect" aria-label="Items per page"></select>
             </div>
             <div class="filter-actions">
@@ -232,6 +237,7 @@
     <script src="torneios/edit-tournament/modal.js"></script>
 </body>
 </html>
+
 
 
 

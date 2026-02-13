@@ -23,6 +23,10 @@ const PER_PAGE_STORAGE_KEY = "tournamentsPerPage";
 const DEFAULT_SORT = { field: "tournament_date", direction: "desc" };
 const SORTABLE_FIELDS = ["tournament_date", "total_players"];
 const SORT_DIRECTIONS = ["asc", "desc"];
+const MONTH_NAMES_PT = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
 
 let tournaments = [];
 let filteredTournaments = [];
@@ -132,16 +136,19 @@ function setupFilters() {
     const filterStore = document.getElementById("filterStore");
     const filterTournamentName = document.getElementById("filterTournamentName");
     const filterInstagram = document.getElementById("filterInstagram");
+    const filterMonthYear = document.getElementById("filterMonthYear");
     const btnClearFilters = document.getElementById("btnClearFilters");
 
     if (filterStore) filterStore.addEventListener("change", applyFilters);
     if (filterTournamentName) filterTournamentName.addEventListener("change", applyFilters);
     if (filterInstagram) filterInstagram.addEventListener("change", applyFilters);
+    if (filterMonthYear) filterMonthYear.addEventListener("change", applyFilters);
     if (btnClearFilters) {
         btnClearFilters.addEventListener("click", () => {
             if (filterStore) filterStore.value = "";
             if (filterTournamentName) filterTournamentName.value = "";
             if (filterInstagram) filterInstagram.value = "";
+            if (filterMonthYear) filterMonthYear.value = "";
             applyFilters();
         });
     }
@@ -150,10 +157,12 @@ function setupFilters() {
 function populateFilterOptions() {
     const filterStore = document.getElementById("filterStore");
     const filterTournamentName = document.getElementById("filterTournamentName");
+    const filterMonthYear = document.getElementById("filterMonthYear");
     if (!filterStore || !filterTournamentName) return;
 
     const selectedStore = filterStore.value;
     const selectedName = filterTournamentName.value;
+    const selectedMonthYear = filterMonthYear?.value || "";
 
     const storesMap = new Map();
     tournaments.forEach((t) => {
@@ -168,12 +177,29 @@ function populateFilterOptions() {
     filterTournamentName.innerHTML = `<option value="">All names</option>` +
         TOURNAMENT_NAME_OPTIONS.map((name) => `<option value="${name}">${name}</option>`).join("");
     if (selectedName && TOURNAMENT_NAME_OPTIONS.includes(selectedName)) filterTournamentName.value = selectedName;
+
+    if (filterMonthYear) {
+        const monthKeys = Array.from(
+            new Set(
+                tournaments
+                    .map((t) => getMonthYearKey(t.tournament_date))
+                    .filter(Boolean)
+            )
+        ).sort((a, b) => b.localeCompare(a));
+
+        filterMonthYear.innerHTML = `<option value="">All months</option>` +
+            monthKeys
+                .map((key) => `<option value="${key}">${formatMonthYearLabel(key)}</option>`)
+                .join("");
+        if (selectedMonthYear && monthKeys.includes(selectedMonthYear)) filterMonthYear.value = selectedMonthYear;
+    }
 }
 
 function getFilteredTournaments() {
     const filterStore = document.getElementById("filterStore")?.value || "";
     const filterTournamentName = document.getElementById("filterTournamentName")?.value || "";
     const filterInstagram = document.getElementById("filterInstagram")?.value || "";
+    const filterMonthYear = document.getElementById("filterMonthYear")?.value || "";
 
     return tournaments.filter((t) => {
         const byStore = !filterStore || String(t.store_id) === String(filterStore);
@@ -182,8 +208,28 @@ function getFilteredTournaments() {
         const byInstagram = !filterInstagram ||
             (filterInstagram === "with_link" && hasInstagramLink) ||
             (filterInstagram === "without_link" && !hasInstagramLink);
-        return byStore && byName && byInstagram;
+        const byMonthYear = !filterMonthYear || getMonthYearKey(t.tournament_date) === filterMonthYear;
+        return byStore && byName && byInstagram && byMonthYear;
     });
+}
+
+function getMonthYearKey(dateString) {
+    if (!dateString || typeof dateString !== "string") return "";
+    const parts = dateString.split("-");
+    if (parts.length < 2) return "";
+    const year = parts[0];
+    const month = parts[1];
+    if (!/^\d{4}$/.test(year) || !/^\d{2}$/.test(month)) return "";
+    return `${year}-${month}`;
+}
+
+function formatMonthYearLabel(monthKey) {
+    const parts = String(monthKey).split("-");
+    if (parts.length !== 2) return monthKey;
+    const year = parts[0];
+    const monthIndex = Number(parts[1]) - 1;
+    const monthName = MONTH_NAMES_PT[monthIndex] || parts[1];
+    return `${monthName} ${year}`;
 }
 
 function applyFilters() {
