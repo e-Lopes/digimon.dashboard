@@ -11,7 +11,7 @@ const headers = window.createSupabaseHeaders
 let currentStore = '';
 let currentDate = '';
 let tournamentDataForCanvas = null;
-let selectedBackgroundPath = '../icons/backgrounds/EX11.png';
+let selectedBackgroundPath = '../icons/backgrounds/BT24.png';
 
 const TOP_LEFT_LOGO_CANDIDATES = ['../icons/digimon-card-game.png', '../icons/logo.png'];
 const TROPHY_ICON_CANDIDATES = [
@@ -37,9 +37,10 @@ const POST_PRESETS_STORAGE_KEY = 'digistats.post-layout-presets.v1';
 const CUSTOM_BACKGROUNDS_STORAGE_KEY = 'digistats.custom-backgrounds.v1';
 const DEFAULT_BACKGROUND_OPTIONS = [
     { label: 'None', value: '' },
+    { label: 'BT24', value: '../icons/backgrounds/BT24.png' },
     { label: 'EX11', value: '../icons/backgrounds/EX11.png' }
 ];
-const DEFAULT_POST_LAYOUT = {
+const INSTAGRAM_DEFAULT_LAYOUT = {
     logo: { x: 80, y: 74, w: 540, h: 198 },
     title: { x: 634, y: 82, w: 338, h: 182, titleOffsetY: 82, dateOffsetY: 136, dateMaxWidth: 302 },
     rows: { x: 92, startY: 280, w: 896, rowHeight: 178, rowGap: 24 },
@@ -61,6 +62,13 @@ const DEFAULT_POST_LAYOUT = {
     store: { x: 96, y: 1162, w: 330, h: 122 },
     handle: { x: 988, y: 1234 },
     typography: { titleSize: 72, dateSize: 72, playerSize: 54, deckSize: 62, handleSize: 46 }
+};
+const DEFAULT_POST_LAYOUT = INSTAGRAM_DEFAULT_LAYOUT;
+const BUILT_IN_PRESETS = {
+    Instagram: {
+        layout: INSTAGRAM_DEFAULT_LAYOUT,
+        builtIn: true
+    }
 };
 let postLayout = loadPostLayout();
 let isPostTemplateEditorActive = false;
@@ -517,10 +525,10 @@ function setupPresetControls() {
     const select = document.getElementById('templatePresetSelect');
     if (!select) return;
     select.addEventListener('dblclick', loadSelectedLayoutPreset);
-    refreshPresetOptions();
+    refreshPresetOptions('Instagram');
 }
 
-function getLayoutPresetsMap() {
+function getUserLayoutPresetsMap() {
     try {
         const raw = localStorage.getItem(POST_PRESETS_STORAGE_KEY);
         if (!raw) return {};
@@ -532,9 +540,21 @@ function getLayoutPresetsMap() {
     }
 }
 
+function getLayoutPresetsMap() {
+    return {
+        ...BUILT_IN_PRESETS,
+        ...getUserLayoutPresetsMap()
+    };
+}
+
 function saveLayoutPresetsMap(map) {
     try {
-        localStorage.setItem(POST_PRESETS_STORAGE_KEY, JSON.stringify(map));
+        const userOnly = {};
+        Object.entries(map || {}).forEach(([name, preset]) => {
+            if (preset?.builtIn) return;
+            userOnly[name] = preset;
+        });
+        localStorage.setItem(POST_PRESETS_STORAGE_KEY, JSON.stringify(userOnly));
     } catch (_) {
         // Ignore storage failures.
     }
@@ -592,13 +612,17 @@ function deleteSelectedLayoutPreset() {
     const select = document.getElementById('templatePresetSelect');
     if (!select || !select.value) return;
     const name = select.value;
+    const presets = getLayoutPresetsMap();
+    if (presets[name]?.builtIn) {
+        alert('Built-in preset cannot be deleted.');
+        return;
+    }
     const confirmed = window.confirm(`Delete preset "${name}"?`);
     if (!confirmed) return;
 
-    const presets = getLayoutPresetsMap();
     delete presets[name];
     saveLayoutPresetsMap(presets);
-    refreshPresetOptions('');
+    refreshPresetOptions('Instagram');
 }
 
 function onGeneratePostAction() {
