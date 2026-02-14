@@ -182,16 +182,16 @@
         container.innerHTML = `
             <div class="calendar-panel">
                 <div class="calendar-toolbar">
-                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month" ${hasPrevMonth ? '' : 'disabled'}><</button>
+                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month" ${hasPrevMonth ? '' : 'disabled'}>◀</button>
                     <div class="calendar-title-wrap">
                         <strong class="calendar-title">${monthKey ? getMonthLabel(monthKey, monthNames) : '-'}</strong>
                     </div>
-                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month" ${hasNextMonth ? '' : 'disabled'}>></button>
+                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month" ${hasNextMonth ? '' : 'disabled'}>▶</button>
                 </div>
                 <div class="calendar-year-nav">
-                    <button type="button" class="calendar-nav-btn" id="calendarPrevYearBtn" aria-label="Previous year" ${hasPrevYear ? '' : 'disabled'}><</button>
+                    <button type="button" class="calendar-nav-btn" id="calendarPrevYearBtn" aria-label="Previous year" ${hasPrevYear ? '' : 'disabled'}>◀</button>
                     <span class="calendar-year-nav-label">${monthKey ? getYearLabel(monthKey) : ''}</span>
-                    <button type="button" class="calendar-nav-btn" id="calendarNextYearBtn" aria-label="Next year" ${hasNextYear ? '' : 'disabled'}>></button>
+                    <button type="button" class="calendar-nav-btn" id="calendarNextYearBtn" aria-label="Next year" ${hasNextYear ? '' : 'disabled'}>▶</button>
                 </div>
                 ${buildCalendarContent(monthKey, tournaments)}
             </div>
