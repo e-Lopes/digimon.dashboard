@@ -106,6 +106,20 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
+function formatOrdinal(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return '-';
+    const int = Math.trunc(n);
+    const abs = Math.abs(int);
+    const mod100 = abs % 100;
+    if (mod100 >= 11 && mod100 <= 13) return `${int}th`;
+    const mod10 = abs % 10;
+    if (mod10 === 1) return `${int}st`;
+    if (mod10 === 2) return `${int}nd`;
+    if (mod10 === 3) return `${int}rd`;
+    return `${int}th`;
+}
+
 function getAssetPrefix() {
     return window.location.pathname.includes('/torneios/list-tournaments/') ? '../../' : '';
 }
@@ -450,7 +464,7 @@ function renderCurrentView() {
     updateToggleViewButton();
     if (perPageField) perPageField.classList.remove('is-hidden');
     renderTable();
-    // PAGINATION
+    renderPagination();
 }
 
 function updateToggleViewButton() {
@@ -627,7 +641,13 @@ function renderTable() {
             tr.classList.add('is-active');
         }
         const instagramLink = t.instagram_link
-            ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">Abrir</a>`
+            ? `<a href="${t.instagram_link}" target="_blank" rel="noopener noreferrer" class="btn-instagram" aria-label="Open Instagram link">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="5" ry="5"></rect>
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <circle cx="17.5" cy="6.5" r="1.2"></circle>
+                </svg>
+            </a>`
             : '-';
 
         const td1 = document.createElement('td');
@@ -720,15 +740,39 @@ function renderTable() {
 function renderPagination() {
     const totalPages = Math.ceil(filteredTournaments.length / perPage);
     const div = document.getElementById('pagination');
+    const nav = document.getElementById('paginationNav');
     div.innerHTML = '';
+    if (nav) nav.classList.add('is-hidden');
 
     if (totalPages <= 1) return;
+
     if (currentPage > totalPages) currentPage = totalPages;
 
-    for (let i = 1; i <= totalPages; i++) {
+    const prevButton = document.createElement('button');
+    prevButton.type = 'button';
+    prevButton.className = 'btn-pagination btn-pagination-prev';
+    prevButton.textContent = '◀';
+    prevButton.setAttribute('aria-label', 'Pagina anterior');
+    prevButton.disabled = currentPage <= 1;
+    prevButton.addEventListener('click', () => {
+        if (currentPage <= 1) return;
+        currentPage -= 1;
+        renderTable();
+        renderPagination();
+    });
+    div.appendChild(prevButton);
+
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(totalPages, currentPage + 2);
+
+    for (let i = startPage; i <= endPage; i++) {
         const btn = document.createElement('button');
+        btn.className = 'btn-pagination-number';
         btn.textContent = i;
-        btn.disabled = i === currentPage;
+        if (i === currentPage) {
+            btn.disabled = true;
+            btn.classList.add('active');
+        }
         btn.addEventListener('click', () => {
             currentPage = i;
             renderTable();
@@ -736,6 +780,20 @@ function renderPagination() {
         });
         div.appendChild(btn);
     }
+
+    const nextButton = document.createElement('button');
+    nextButton.type = 'button';
+    nextButton.className = 'btn-pagination btn-pagination-next';
+    nextButton.textContent = '▶';
+    nextButton.setAttribute('aria-label', 'Proxima pagina');
+    nextButton.disabled = currentPage >= totalPages;
+    nextButton.addEventListener('click', () => {
+        if (currentPage >= totalPages) return;
+        currentPage += 1;
+        renderTable();
+        renderPagination();
+    });
+    div.appendChild(nextButton);
 }
 
 // ============================================================
@@ -1056,6 +1114,14 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
             return '';
         };
 
+        const fullResultsPlacementClass = (placement) => {
+            if (placement === 1) return 'first-place';
+            if (placement === 2) return 'second-place';
+            if (placement === 3) return 'third-place';
+            if (placement === 4) return 'fourth-place';
+            return 'other-place';
+        };
+
         const podiumHtml = topFour.length
             ? topFour
                   .map((item) => {
@@ -1064,7 +1130,7 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
                           `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent((item.deck || 'Deck').substring(0, 10))}`;
                       return `
                 <div class="details-podium-card ${placementClass(Number(item.placement))}">
-                    <div class="details-rank-badge">${item.placement}º</div>
+                    <div class="details-rank-badge">${formatOrdinal(item.placement)}</div>
                     <div class="details-deck-card-footer">
                         <div class="details-player-name">${item.player || '-'}</div>
                         <div class="details-deck-name">${item.deck || '-'}</div>
@@ -1109,10 +1175,10 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
 
         const resultsHtml = (results || []).length
             ? results
-                  .map(
-                      (item) => `
-                <div class="results-mini-item">
-                    <div class="results-mini-rank">${item.placement}º</div>
+                .map(
+                    (item) => `
+                <div class="results-mini-item ${fullResultsPlacementClass(Number(item.placement))}">
+                    <div class="results-mini-rank">${formatOrdinal(item.placement)}</div>
                     <div class="results-mini-main">
                         <strong>${item.deck || '-'}</strong>
                         <span>${item.player || '-'}</span>
@@ -1133,15 +1199,35 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
             ${header}
             <div class="details-grid">
                 <div class="details-block">
-                    <h3>Podium</h3>
+                    <h3 class="details-section-title">
+                        <svg class="details-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M6 21h12" />
+                            <path d="M8 21V10h3v11" />
+                            <path d="M13 21V6h3v15" />
+                            <path d="M3 21V14h3v7" />
+                        </svg>
+                        <span>Podium</span>
+                    </h3>
                     <div class="details-podium">${podiumHtml}</div>
                 </div>
                 <div class="details-block details-full-results-block">
-                    <h3>Full Results</h3>
+                    <h3 class="details-section-title">
+                        <svg class="details-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <span>Full Results</span>
+                    </h3>
                     <div class="results-mini">${resultsHtml}</div>
                 </div>
                 <div class="details-block details-pie-block">
-                    <h3>Deck Distribution</h3>
+                    <h3 class="details-section-title">
+                        <svg class="details-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M21.21 15.89A10 10 0 1 1 12 2v10z" />
+                            <path d="M12 2a10 10 0 0 1 10 10h-10z" />
+                        </svg>
+                        <span>Deck Distribution</span>
+                    </h3>
                     <div class="details-pie-panel">
                         <div class="details-pie-container">${pieHtml}</div>
                         <div class="details-pie-legend">${pieLegend}</div>
