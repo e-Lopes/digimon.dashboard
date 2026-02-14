@@ -2,28 +2,40 @@
     <div class="modal-content">
         <h2>Edit Deck</h2>
         <form id="editDeckForm">
-            <input id="editDeckId" type="hidden">
+            <input id="editDeckId" type="hidden" />
             <div class="form-group">
                 <label class="form-label" for="editDeckName">Deck Name*</label>
-                <input id="editDeckName" class="form-input" type="text" required>
+                <input id="editDeckName" class="form-input" type="text" required />
             </div>
             <div class="form-group">
                 <label class="form-label" for="editDeckCode">Deck Code*</label>
-                <input id="editDeckCode" class="form-input" type="text" placeholder="BT16-064" required>
+                <input
+                    id="editDeckCode"
+                    class="form-input"
+                    type="text"
+                    placeholder="BT16-064"
+                    required
+                />
                 <div class="code-examples">
                     <div class="code-example" data-code="BT24-030">BT24-030</div>
                     <div class="code-example" data-code="ST22-05">ST22-05</div>
                     <div class="code-example" data-code="EX5-001">EX5-001</div>
                     <div class="code-example" data-code="P-183">P-183</div>
                 </div>
-                <div id="editDeckPreview" class="modal-preview" style="display: none;">
+                <div id="editDeckPreview" class="modal-preview" style="display: none">
                     <div class="deck-thumb-wrapper modal-preview-thumb">
-                        <img id="editDeckPreviewImage" class="deck-thumb-image" alt="Deck preview">
+                        <img
+                            id="editDeckPreviewImage"
+                            class="deck-thumb-image"
+                            alt="Deck preview"
+                        />
                     </div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button type="button" id="btnCloseEditDeckModal" class="btn-modal-cancel">Cancel</button>
+                <button type="button" id="btnCloseEditDeckModal" class="btn-modal-cancel">
+                    Cancel
+                </button>
                 <button type="submit" class="btn-modal-save">Save</button>
             </div>
             <div class="modal-tips">

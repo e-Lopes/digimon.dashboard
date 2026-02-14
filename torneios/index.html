@@ -1,82 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Report - Digimon TCG</title>
-    <link rel="icon" type="image/png" href="../icons/favicon/favicon.png">
-    <link rel="stylesheet" href="../styles.css">
-</head>
-<body>
-    <div class="container">
-        <!-- ✅ Navigation at top -->
-        <div style="margin-bottom: 20px;">
-            <a href="../index.html" class="nav-button">
-                <span>← Back to Dashboard</span>
-            </a>
-        </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Submit Report - Digimon TCG</title>
+        <link rel="icon" type="image/png" href="../icons/favicon/favicon.png" />
+        <link rel="stylesheet" href="../styles.css" />
+        <link rel="stylesheet" href="../styles/components/utilities.css" />
+        <link rel="stylesheet" href="../styles/components/states.css" />
+    </head>
+    <body>
+        <div class="container">
+            <!-- Navigation at top -->
+            <div class="u-mb-20">
+                <a href="../index.html" class="nav-button">
+                    <span>&larr; Back to Dashboard</span>
+                </a>
+            </div>
 
-        <header>
-            <h1>🏆 Submit Tournament Report</h1>
-            <p class="subtitle">Enter the results for the latest event</p>
-        </header>
+            <header>
+                <h1>Submit Tournament Report</h1>
+                <p class="subtitle">Enter the results for the latest event</p>
+            </header>
 
-        <div class="registration-box">
-            <form id="reportForm">
-                <div class="form-header-grid">
-                    <div class="form-group">
-                        <label for="storeSelect">
-                            Store Name <span class="required">*</span>
-                        </label>
-                        <select id="storeSelect" required>
-                            <option value="">Select store...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tournamentDate">
-                            Tournament Date <span class="required">*</span>
-                        </label>
-                        <input type="date" id="tournamentDate" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="totalPlayers">
-                            Total Players <span class="required">*</span>
-                        </label>
-                        <input type="number" id="totalPlayers" min="1" max="99" placeholder="Ex: 8" required>
-                    </div>
-                </div>
+            <div class="registration-box">
+                <form id="reportForm">
+                    <div class="form-header-grid">
+                        <div class="form-group">
+                            <label for="storeSelect">
+                                Store Name <span class="required">*</span>
+                            </label>
+                            <select id="storeSelect" required>
+                                <option value="">Select store...</option>
+                            </select>
+                        </div>
 
-                <div class="placements-section">
-                    <div class="placements-header">
-                        <h2>
-                            Placements
-                            <span class="placements-count" id="placementsCount">0</span>
-                        </h2>
-                    </div>
-                    
-                    <div id="placementsContainer">
-                        <div class="placements-empty">
-                            <div class="placements-empty-icon">🎯</div>
-                            <p>Enter the total number of players above to add placements</p>
+                        <div class="form-group">
+                            <label for="tournamentDate">
+                                Tournament Date <span class="required">*</span>
+                            </label>
+                            <input type="date" id="tournamentDate" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="totalPlayers">
+                                Total Players <span class="required">*</span>
+                            </label>
+                            <input
+                                type="number"
+                                id="totalPlayers"
+                                min="1"
+                                max="99"
+                                placeholder="Ex: 8"
+                                required
+                            />
                         </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn-save" id="submitBtn">
-                    💾 Save Tournament Results
-                </button>
-            </form>
+                    <div class="placements-section">
+                        <div class="placements-header">
+                            <h2>
+                                Placements
+                                <span class="placements-count" id="placementsCount">0</span>
+                            </h2>
+                        </div>
+
+                        <div id="placementsContainer">
+                            <div class="placements-empty">
+                                <div class="placements-empty-icon">&#127942;</div>
+                                <p>Enter the total number of players above to add placements</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-save" id="submitBtn">
+                        Save Tournament Results
+                    </button>
+                </form>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Saving tournament results...</p>
+            </div>
         </div>
 
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Saving tournament results...</p>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
+        <script src="../config/supabase.js"></script>
+        <script src="../config/api-client.js"></script>
+        <script src="../config/ui-state.js"></script>
+        <script src="../config/app-version.js"></script>
+        <script src="../config/validation.js"></script>
+        <script src="script.js"></script>
+        <script src="../config/register-sw.js"></script>
+    </body>
 </html>
-

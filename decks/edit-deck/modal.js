@@ -1,5 +1,5 @@
 (function () {
-    const IMAGE_BASE_URL = "https://deckbuilder.egmanevents.com/card_images/digimon/";
+    const IMAGE_BASE_URL = 'https://deckbuilder.egmanevents.com/card_images/digimon/';
     const MODAL_TEMPLATE = `
 <div id="editDeckModal" class="modal-overlay" aria-hidden="true">
     <div class="modal-content">
@@ -43,10 +43,10 @@
 </div>`;
 
     function loadTemplate() {
-        const host = document.getElementById("editDeckModalHost");
+        const host = document.getElementById('editDeckModalHost');
         if (!host) return null;
         host.innerHTML = MODAL_TEMPLATE;
-        return host.querySelector("#editDeckModal");
+        return host.querySelector('#editDeckModal');
     }
 
     function isValidDeckCode(code) {
@@ -55,46 +55,58 @@
     }
 
     function extractCodeFromUrl(url) {
-        if (!url) return "";
+        if (!url) return '';
         const match = url.match(/\/([A-Z0-9-]+)\.webp$/);
-        return match ? match[1] : "";
+        return match ? match[1] : '';
     }
 
     async function checkDuplicateDeckName(supabaseUrl, headers, deckName, excludeDeckId) {
-        const res = await fetch(`${supabaseUrl}/rest/v1/decks?name=eq.${encodeURIComponent(deckName)}&select=id`, { headers });
+        const res = await fetch(
+            `${supabaseUrl}/rest/v1/decks?name=eq.${encodeURIComponent(deckName)}&select=id`,
+            { headers }
+        );
         if (!res.ok) return false;
         const rows = await res.json();
         return rows.some((r) => String(r.id) !== String(excludeDeckId));
     }
 
     async function updateDeck(supabaseUrl, headers, deckId, deckName, deckCode) {
-        const imageUrl = IMAGE_BASE_URL + deckCode + ".webp";
+        const imageUrl = IMAGE_BASE_URL + deckCode + '.webp';
 
-        const deckRes = await fetch(`${supabaseUrl}/rest/v1/decks?id=eq.${encodeURIComponent(deckId)}`, {
-            method: "PATCH",
-            headers,
-            body: JSON.stringify({ name: deckName })
-        });
-        if (!deckRes.ok) throw new Error("Error updating deck");
+        const deckRes = await fetch(
+            `${supabaseUrl}/rest/v1/decks?id=eq.${encodeURIComponent(deckId)}`,
+            {
+                method: 'PATCH',
+                headers,
+                body: JSON.stringify({ name: deckName })
+            }
+        );
+        if (!deckRes.ok) throw new Error('Error updating deck');
 
-        const checkRes = await fetch(`${supabaseUrl}/rest/v1/deck_images?deck_id=eq.${encodeURIComponent(deckId)}&select=id`, { headers });
-        if (!checkRes.ok) throw new Error("Error checking deck image");
+        const checkRes = await fetch(
+            `${supabaseUrl}/rest/v1/deck_images?deck_id=eq.${encodeURIComponent(deckId)}&select=id`,
+            { headers }
+        );
+        if (!checkRes.ok) throw new Error('Error checking deck image');
         const existing = await checkRes.json();
 
         if (existing.length > 0) {
-            const patchRes = await fetch(`${supabaseUrl}/rest/v1/deck_images?deck_id=eq.${encodeURIComponent(deckId)}`, {
-                method: "PATCH",
-                headers,
-                body: JSON.stringify({ image_url: imageUrl })
-            });
-            if (!patchRes.ok) throw new Error("Error updating deck image");
+            const patchRes = await fetch(
+                `${supabaseUrl}/rest/v1/deck_images?deck_id=eq.${encodeURIComponent(deckId)}`,
+                {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify({ image_url: imageUrl })
+                }
+            );
+            if (!patchRes.ok) throw new Error('Error updating deck image');
         } else {
             const postRes = await fetch(`${supabaseUrl}/rest/v1/deck_images`, {
-                method: "POST",
+                method: 'POST',
                 headers,
                 body: JSON.stringify([{ deck_id: deckId, image_url: imageUrl }])
             });
-            if (!postRes.ok) throw new Error("Error creating deck image");
+            if (!postRes.ok) throw new Error('Error creating deck image');
         }
     }
 
@@ -105,86 +117,91 @@
         const modal = loadTemplate();
         if (!modal) return;
 
-        const closeBtn = document.getElementById("btnCloseEditDeckModal");
-        const form = document.getElementById("editDeckForm");
-        const idInput = document.getElementById("editDeckId");
-        const nameInput = document.getElementById("editDeckName");
-        const codeInput = document.getElementById("editDeckCode");
-        const codeExamples = document.querySelectorAll("#editDeckModal .code-example");
-        const preview = document.getElementById("editDeckPreview");
-        const previewImage = document.getElementById("editDeckPreviewImage");
+        const closeBtn = document.getElementById('btnCloseEditDeckModal');
+        const form = document.getElementById('editDeckForm');
+        const idInput = document.getElementById('editDeckId');
+        const nameInput = document.getElementById('editDeckName');
+        const codeInput = document.getElementById('editDeckCode');
+        const codeExamples = document.querySelectorAll('#editDeckModal .code-example');
+        const preview = document.getElementById('editDeckPreview');
+        const previewImage = document.getElementById('editDeckPreviewImage');
 
         const closeModal = () => {
-            modal.classList.remove("active");
-            modal.setAttribute("aria-hidden", "true");
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
         };
 
         const updatePreview = () => {
             if (!codeInput || !preview || !previewImage) return;
             const code = codeInput.value.trim().toUpperCase();
             if (!isValidDeckCode(code)) {
-                preview.style.display = "none";
-                previewImage.removeAttribute("src");
+                preview.style.display = 'none';
+                previewImage.removeAttribute('src');
                 return;
             }
-            previewImage.src = IMAGE_BASE_URL + code + ".webp";
-            preview.style.display = "flex";
+            previewImage.src = IMAGE_BASE_URL + code + '.webp';
+            preview.style.display = 'flex';
         };
 
-        if (closeBtn) closeBtn.addEventListener("click", closeModal);
-        modal.addEventListener("click", (e) => {
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
 
         if (codeInput) {
-            codeInput.addEventListener("input", () => {
+            codeInput.addEventListener('input', () => {
                 codeInput.value = codeInput.value.toUpperCase();
                 updatePreview();
             });
         }
 
         if (previewImage && preview) {
-            previewImage.addEventListener("error", () => {
-                preview.style.display = "none";
+            previewImage.addEventListener('error', () => {
+                preview.style.display = 'none';
             });
-            previewImage.addEventListener("load", () => {
-                if (previewImage.getAttribute("src")) preview.style.display = "flex";
+            previewImage.addEventListener('load', () => {
+                if (previewImage.getAttribute('src')) preview.style.display = 'flex';
             });
         }
 
         if (codeExamples.length && codeInput) {
             codeExamples.forEach((example) => {
-                example.addEventListener("click", () => {
-                    const code = example.getAttribute("data-code") || "";
+                example.addEventListener('click', () => {
+                    const code = example.getAttribute('data-code') || '';
                     codeInput.value = code;
-                    codeInput.dispatchEvent(new Event("input"));
+                    codeInput.dispatchEvent(new Event('input'));
                     codeInput.focus();
-                    example.style.transform = "scale(0.95)";
+                    example.style.transform = 'scale(0.95)';
                     setTimeout(() => {
-                        example.style.transform = "translateY(-2px)";
+                        example.style.transform = 'translateY(-2px)';
                     }, 100);
                 });
             });
         }
 
         if (form) {
-            form.addEventListener("submit", async (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const deckId = idInput?.value || "";
-                const deckName = (nameInput?.value || "").trim();
-                const deckCode = (codeInput?.value || "").trim().toUpperCase();
+                const deckId = idInput?.value || '';
+                const deckName = (nameInput?.value || '').trim();
+                const deckCode = (codeInput?.value || '').trim().toUpperCase();
 
                 if (!deckId || !deckName || !deckCode) {
-                    alert("Please fill in all required fields.");
+                    alert('Please fill in all required fields.');
                     return;
                 }
 
                 if (!isValidDeckCode(deckCode)) {
-                    alert("Invalid deck code. Use format like BT16-064.");
+                    alert('Invalid deck code. Use format like BT16-064.');
                     return;
                 }
 
-                const isDuplicate = await checkDuplicateDeckName(supabaseUrl, headers, deckName, deckId);
+                const isDuplicate = await checkDuplicateDeckName(
+                    supabaseUrl,
+                    headers,
+                    deckName,
+                    deckId
+                );
                 if (isDuplicate) {
                     alert(`A deck named "${deckName}" already exists.`);
                     return;
@@ -193,21 +210,21 @@
                 try {
                     await updateDeck(supabaseUrl, headers, deckId, deckName, deckCode);
                     closeModal();
-                    if (typeof onUpdated === "function") await onUpdated();
+                    if (typeof onUpdated === 'function') await onUpdated();
                 } catch (err) {
                     console.error(err);
-                    alert("Error updating deck. Please try again.");
+                    alert('Error updating deck. Please try again.');
                 }
             });
         }
 
         window.openEditDeckModal = function openEditDeckModal(deckId, deckName, imageUrl) {
-            if (idInput) idInput.value = deckId || "";
-            if (nameInput) nameInput.value = deckName || "";
-            if (codeInput) codeInput.value = extractCodeFromUrl(imageUrl || "");
+            if (idInput) idInput.value = deckId || '';
+            if (nameInput) nameInput.value = deckName || '';
+            if (codeInput) codeInput.value = extractCodeFromUrl(imageUrl || '');
             updatePreview();
-            modal.classList.add("active");
-            modal.setAttribute("aria-hidden", "false");
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
         };
     };
 })();

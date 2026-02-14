@@ -1,0 +1,16 @@
+{
+    "name": "digimon-dashboard",
+    "private": true,
+    "version": "1.0.0",
+    "description": "Digimon dashboard frontend tooling",
+    "scripts": {
+        "test": "node --test",
+        "lint": "eslint \"**/*.js\"",
+        "format": "prettier --write \"**/*.{js,css,html,md,json}\"",
+        "db:snapshot": "powershell -ExecutionPolicy Bypass -File scripts/export-supabase-schema.ps1"
+    },
+    "devDependencies": {
+        "eslint": "^9.20.1",
+        "prettier": "^3.5.2"
+    }
+}

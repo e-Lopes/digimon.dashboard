@@ -1,41 +1,62 @@
-const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
+const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || 'https://vllqakohumoinpdwnsqa.supabase.co';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || '';
+const headers = window.createSupabaseHeaders
+    ? window.createSupabaseHeaders()
+    : {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+      };
 
-const headers = {
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-    "Content-Type": "application/json"
-};
+const IMAGE_BASE_URL = 'https://deckbuilder.egmanevents.com/card_images/digimon/';
 
-const IMAGE_BASE_URL = "https://deckbuilder.egmanevents.com/card_images/digimon/";
-
-const isListPage = window.location.pathname.includes('decks/index.html') || 
-                   window.location.pathname === '/decks/' || 
-                   window.location.pathname.endsWith('decks/');
+const isListPage =
+    window.location.pathname.includes('decks/index.html') ||
+    window.location.pathname === '/decks/' ||
+    window.location.pathname.endsWith('decks/');
 
 document.addEventListener('DOMContentLoaded', () => {
     if (isListPage) {
+        setupDeckActions();
         loadDecks();
     }
 });
+
+function setupDeckActions() {
+    const container = document.getElementById('decksList');
+    if (!container) return;
+
+    container.addEventListener('click', (event) => {
+        const editButton = event.target.closest('[data-action="edit-deck"]');
+        if (editButton) {
+            editDeck(editButton.dataset.deckId);
+            return;
+        }
+
+        const deleteButton = event.target.closest('[data-action="delete-deck"]');
+        if (deleteButton) {
+            deleteDeck(deleteButton.dataset.deckId, deleteButton.dataset.deckName || '');
+        }
+    });
+}
 
 // ========== VALIDAÇÃO DE NOME DUPLICADO ==========
 async function checkDuplicateDeckName(deckName, excludeDeckId = null) {
     try {
         let query = `${SUPABASE_URL}/rest/v1/decks?name=eq.${encodeURIComponent(deckName)}`;
-        
+
         const res = await fetch(query, { headers });
-        
+
         if (!res.ok) return false;
-        
+
         const decks = await res.json();
-        
+
         // Se estiver editando, excluir o deck atual da verificação
         if (excludeDeckId) {
-            const duplicates = decks.filter(d => d.id !== excludeDeckId);
+            const duplicates = decks.filter((d) => d.id !== excludeDeckId);
             return duplicates.length > 0;
         }
-        
+
         return decks.length > 0;
     } catch (error) {
         console.error('Error checking duplicate name:', error);
@@ -51,24 +72,24 @@ function updateImagePreview() {
         const previewImage = document.getElementById('previewImage');
         const imageUrlDisplay = document.getElementById('imageUrlDisplay');
         const generatedUrlSpan = document.getElementById('generatedUrl');
-        
+
         if (!deckCodeInput) return;
-        
+
         const code = deckCodeInput.value.trim().toUpperCase();
-        
+
         if (code && isValidDeckCode(code)) {
-            const imageUrl = IMAGE_BASE_URL + code + ".webp";
-            
+            const imageUrl = IMAGE_BASE_URL + code + '.webp';
+
             if (previewImage && imagePreview) {
                 previewImage.src = imageUrl;
                 previewImage.alt = `Card: ${code}`;
                 imagePreview.classList.add('active');
-                
+
                 previewImage.onerror = () => {
                     imagePreview.classList.remove('active');
                 };
             }
-            
+
             if (imageUrlDisplay && generatedUrlSpan) {
                 generatedUrlSpan.textContent = imageUrl;
                 imageUrlDisplay.classList.add('active');
@@ -99,25 +120,29 @@ function isValidDeckCode(code) {
 async function loadDecks() {
     try {
         showLoading(true);
-        
-        const decksRes = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=*&order=name.asc`, { headers });
+
+        const decksRes = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=*&order=name.asc`, {
+            headers
+        });
         if (!decksRes.ok) throw new Error('Error loading decks');
-        
+
         const decks = await decksRes.json();
-        
-        const imagesRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images?select=deck_id,image_url`, { headers });
+
+        const imagesRes = await fetch(
+            `${SUPABASE_URL}/rest/v1/deck_images?select=deck_id,image_url`,
+            { headers }
+        );
         let imagesMap = {};
-        
+
         if (imagesRes.ok) {
             const images = await imagesRes.json();
-            images.forEach(img => {
+            images.forEach((img) => {
                 imagesMap[img.deck_id] = img.image_url;
             });
         }
-        
+
         displayDecks(decks, imagesMap);
         showLoading(false);
-        
     } catch (error) {
         console.error('Error loading decks:', error);
         showError('Error loading decks. Try Again.');
@@ -128,20 +153,23 @@ async function loadDecks() {
 function displayDecks(decks, imagesMap) {
     const container = document.getElementById('decksList');
     const emptyState = document.getElementById('emptyState');
-    
+
     if (!decks || decks.length === 0) {
         container.style.display = 'none';
         emptyState.style.display = 'block';
         return;
     }
-    
+
     container.innerHTML = '';
     emptyState.style.display = 'none';
-    
-    decks.forEach(deck => {
-        const imageUrl = imagesMap[deck.id] || 'https://via.placeholder.com/300x200/667eea/ffffff?text=' + encodeURIComponent(deck.name.substring(0, 15));
+
+    decks.forEach((deck) => {
+        const imageUrl =
+            imagesMap[deck.id] ||
+            'https://via.placeholder.com/300x200/667eea/ffffff?text=' +
+                encodeURIComponent(deck.name.substring(0, 15));
         const deckCode = extractCodeFromUrl(imagesMap[deck.id]);
-        
+
         const deckCard = document.createElement('div');
         deckCard.className = 'deck-card';
         deckCard.innerHTML = `
@@ -153,12 +181,12 @@ function displayDecks(decks, imagesMap) {
                 <h3 class="deck-name">${deck.name}</h3>
                 ${deckCode ? `<div class="deck-code">${deckCode}</div>` : ''}
                 <div class="deck-actions">
-                    <button class="btn-secondary" onclick="editDeck('${deck.id}')">Edit</button>
-                    <button class="btn-secondary btn-danger" onclick="deleteDeck('${deck.id}', '${deck.name.replace(/'/g, "\\'")}')">Delete</button>
+                    <button class="btn-secondary" type="button" data-action="edit-deck" data-deck-id="${deck.id}">Edit</button>
+                    <button class="btn-secondary btn-danger" type="button" data-action="delete-deck" data-deck-id="${deck.id}" data-deck-name="${deck.name.replace(/"/g, '&quot;')}">Delete</button>
                 </div>
             </div>
         `;
-        
+
         container.appendChild(deckCard);
     });
 }
@@ -172,45 +200,50 @@ function extractCodeFromUrl(url) {
 async function deleteDeck(deckId, deckName) {
     try {
         showLoading(true);
-        
+
         const tournamentResultsRes = await fetch(
             `${SUPABASE_URL}/rest/v1/tournament_results?deck_id=eq.${deckId}`,
             { headers }
         );
-        
+
         if (!tournamentResultsRes.ok) {
             throw new Error(`HTTP ${tournamentResultsRes.status}`);
         }
-        
+
         const tournamentResults = await tournamentResultsRes.json();
-        
+
         if (tournamentResults && tournamentResults.length > 0) {
             showLoading(false);
-            alert(`Cannot delete deck "${deckName}" because it has ${tournamentResults.length} tournament result(s) recorded.\n\nPlease delete the tournament results first.`);
+            alert(
+                `Cannot delete deck "${deckName}" because it has ${tournamentResults.length} tournament result(s) recorded.\n\nPlease delete the tournament results first.`
+            );
             return;
         }
-        
-        if (!confirm(`Are you sure you want to delete the deck "${deckName}"?\n\nThis action cannot be undone.`)) {
+
+        if (
+            !confirm(
+                `Are you sure you want to delete the deck "${deckName}"?\n\nThis action cannot be undone.`
+            )
+        ) {
             showLoading(false);
             return;
         }
-        
+
         await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, {
             method: 'DELETE',
             headers: headers
         });
-        
+
         const res = await fetch(`${SUPABASE_URL}/rest/v1/decks?id=eq.${deckId}`, {
             method: 'DELETE',
             headers: headers
         });
-        
+
         if (res.ok) {
             loadDecks();
         } else {
             throw new Error('Error deleting deck');
         }
-        
     } catch (error) {
         console.error('Error deleting deck:', error);
         alert('Error deleting deck. Please try again.');
@@ -220,8 +253,8 @@ async function deleteDeck(deckId, deckName) {
 }
 
 function editDeck(deckId) {
-    if (typeof openEditDeckModal === "function") {
-        openEditDeckModal(deckId, "", "");
+    if (typeof openEditDeckModal === 'function') {
+        openEditDeckModal(deckId, '', '');
     }
 }
 
@@ -229,24 +262,24 @@ function editDeck(deckId) {
 function setupCadastroForm() {
     const form = document.getElementById('deckForm');
     const deckCodeInput = document.getElementById('deckCode');
-    
+
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
-    
+
     if (editId) {
         loadDeckForEdit(editId);
     }
-    
+
     if (deckCodeInput) {
-        deckCodeInput.addEventListener('input', function(e) {
+        deckCodeInput.addEventListener('input', function (e) {
             this.value = this.value.toUpperCase();
             updateImagePreview();
         });
-        
+
         deckCodeInput.addEventListener('change', updateImagePreview);
         deckCodeInput.addEventListener('keyup', updateImagePreview);
     }
-    
+
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -262,36 +295,36 @@ async function loadDeckForEdit(deckId) {
             window.history.back();
             return;
         }
-        
+
         showLoading(true);
-        
-        const deckRes = await fetch(`${SUPABASE_URL}/rest/v1/decks?id=eq.${deckId}`, { 
+
+        const deckRes = await fetch(`${SUPABASE_URL}/rest/v1/decks?id=eq.${deckId}`, {
             headers,
             mode: 'cors'
         });
-        
+
         if (!deckRes.ok) {
             throw new Error(`Error loading deck: ${deckRes.status}`);
         }
-        
+
         const deckData = await deckRes.json();
-        
+
         if (!deckData || deckData.length === 0) {
             throw new Error('Deck not found');
         }
-        
+
         const deck = deckData[0];
         let deckCode = '';
-        
+
         try {
             const imageRes = await fetch(
                 `${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}&select=image_url`,
                 { headers }
             );
-            
+
             if (imageRes.ok) {
                 const images = await imageRes.json();
-                
+
                 if (images && images.length > 0 && images[0].image_url) {
                     const imageUrl = images[0].image_url;
                     const match = imageUrl.match(/\/([A-Z0-9-]+)\.webp$/);
@@ -303,35 +336,34 @@ async function loadDeckForEdit(deckId) {
         } catch (imageError) {
             console.warn('Error loading image:', imageError);
         }
-        
+
         const deckNameInput = document.getElementById('deckName');
         const deckCodeInput = document.getElementById('deckCode');
-        
+
         if (deckNameInput) {
             deckNameInput.value = deck.name;
         }
-        
+
         if (deckCodeInput && deckCode) {
             deckCodeInput.value = deckCode;
             setTimeout(() => updateImagePreview(), 100);
         }
-        
+
         const pageTitle = document.querySelector('.page-title');
         const submitBtn = document.getElementById('submitBtn');
-        
+
         if (pageTitle) {
             pageTitle.textContent = '✏️ Edit Deck';
         }
-        
+
         if (submitBtn) {
             submitBtn.textContent = 'Update Deck';
         }
-        
+
         window.currentDeckId = deckId;
         window.originalDeckName = deck.name; // ✅ Guardar nome original
-        
+
         showLoading(false);
-        
     } catch (error) {
         console.error('Error loading deck for editing:', error);
         showError('Error loading. Redirecting...');
@@ -344,36 +376,35 @@ async function loadDeckForEdit(deckId) {
 async function saveDeck(editId = null) {
     const deckName = document.getElementById('deckName').value.trim();
     const deckCode = document.getElementById('deckCode').value.trim().toUpperCase();
-    
+
     if (!deckName || !deckCode) {
         showError('Please fill in all required fields.');
         return;
     }
-    
+
     if (!isValidDeckCode(deckCode)) {
         showError('Invalid code format. Use: SET-NUMBER (ex: BT16-064, ST22-05, EX5-001)');
         return;
     }
-    
+
     // ✅ VALIDAÇÃO DE NOME DUPLICADO
     const isDuplicate = await checkDuplicateDeckName(deckName, editId);
-    
+
     if (isDuplicate) {
         showError(`A deck named "${deckName}" already exists!\n\nPlease choose a different name.`);
         return;
     }
-    
-    const imageUrl = IMAGE_BASE_URL + deckCode + ".webp";
-    
+
+    const imageUrl = IMAGE_BASE_URL + deckCode + '.webp';
+
     try {
         showLoading(true);
-        
+
         if (editId) {
             await updateDeck(editId, deckName, imageUrl);
         } else {
             await createDeck(deckName, imageUrl);
         }
-        
     } catch (error) {
         console.error('Error saving deck:', error);
         showError('Error saving deck. Try Again.');
@@ -387,45 +418,44 @@ async function createDeck(deckName, imageUrl) {
             method: 'POST',
             headers: {
                 ...headers,
-                'Prefer': 'return=representation'
+                Prefer: 'return=representation'
             },
             body: JSON.stringify([{ name: deckName }])
         });
-        
+
         if (!deckRes.ok) {
             throw new Error('Error creating deck');
         }
-        
+
         const newDeck = (await deckRes.json())[0];
-        
+
         const imagePayload = {
             deck_id: newDeck.id,
             image_url: imageUrl
         };
-        
+
         const imageRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images`, {
             method: 'POST',
             headers: {
                 ...headers,
-                'Prefer': 'return=representation'
+                Prefer: 'return=representation'
             },
             body: JSON.stringify([imagePayload])
         });
-        
+
         if (!imageRes.ok) {
             await fetch(`${SUPABASE_URL}/rest/v1/decks?id=eq.${newDeck.id}`, {
                 method: 'DELETE',
                 headers: headers
             });
-            
+
             throw new Error(`Error saving image: ${imageRes.status}`);
         }
-        
+
         showSuccess('Deck created successfully!');
         setTimeout(() => {
             window.location.href = 'index.html';
         }, 1500);
-        
     } catch (error) {
         console.error('Error in createDeck:', error);
         showError(error.message);
@@ -439,10 +469,12 @@ async function updateDeck(deckId, deckName, imageUrl) {
         headers: headers,
         body: JSON.stringify({ name: deckName })
     });
-    
-    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, { headers });
+
+    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, {
+        headers
+    });
     const existingImages = await checkRes.json();
-    
+
     if (existingImages.length > 0) {
         await fetch(`${SUPABASE_URL}/rest/v1/deck_images?deck_id=eq.${deckId}`, {
             method: 'PATCH',
@@ -453,13 +485,15 @@ async function updateDeck(deckId, deckName, imageUrl) {
         await fetch(`${SUPABASE_URL}/rest/v1/deck_images`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify([{
-                deck_id: deckId,
-                image_url: imageUrl
-            }])
+            body: JSON.stringify([
+                {
+                    deck_id: deckId,
+                    image_url: imageUrl
+                }
+            ])
         });
     }
-    
+
     showSuccess('Deck updated successfully!');
     setTimeout(() => {
         window.location.href = 'index.html';

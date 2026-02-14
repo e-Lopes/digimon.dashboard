@@ -1,70 +1,91 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Players - DigiStats</title>
-    <link rel="icon" type="image/png" href="../icons/favicon/favicon.png">
-    <link rel="stylesheet" href="../styles.css">
-</head>
-<body>
-    <div class="container">
-        <div class="top-nav">
-            <a href="../index.html" class="nav-button">&larr; Back to Dashboard</a>
-        </div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manage Players - DigiStats</title>
+        <link rel="icon" type="image/png" href="../icons/favicon/favicon.png" />
+        <link rel="stylesheet" href="../styles.css" />
+        <link rel="stylesheet" href="../styles/components/utilities.css" />
+        <link rel="stylesheet" href="../styles/components/states.css" />
+        <link rel="stylesheet" href="../styles/pages/players.css" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="top-nav">
+                <a href="../index.html" class="nav-button">&larr; Back to Dashboard</a>
+            </div>
 
-        <div class="page-header">
-            <h1 class="page-title">Manage Players</h1>
-            <div class="stats-counter">Total: <span id="totalPlayersCount">0</span></div>
-        </div>
+            <div class="page-header">
+                <h1 class="page-title">Manage Players</h1>
+                <div class="stats-counter">Total: <span id="totalPlayersCount">0</span></div>
+            </div>
 
-        <div class="quick-add-section">
-            <form id="playerForm" class="add-player-form">
-                <div class="form-row">
-                    <input type="text" id="playerName" placeholder="Enter player name..." required autocomplete="off">
-                    <button type="submit" id="submitBtn" class="btn-primary">
-                        <span class="btn-text">+ Add Player</span>
-                    </button>
-                    <button type="button" id="cancelBtn" class="btn-cancel">Cancel</button>
+            <div class="quick-add-section">
+                <form id="playerForm" class="add-player-form">
+                    <div class="form-row">
+                        <input
+                            type="text"
+                            id="playerName"
+                            placeholder="Enter player name..."
+                            required
+                            autocomplete="off"
+                        />
+                        <button type="submit" id="submitBtn" class="btn-primary">
+                            <span class="btn-text">+ Add Player</span>
+                        </button>
+                        <button type="button" id="cancelBtn" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Search players by name..."
+                />
+                <select
+                    id="pageSizeSelect"
+                    class="page-size-select"
+                    title="Items per page"
+                    aria-label="Items per page"
+                >
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <div id="playersList" class="players-list">
+                <div class="loading">
+                    <div class="spinner"></div>
                 </div>
-            </form>
-        </div>
+            </div>
 
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search players by name...">
-            <select id="pageSizeSelect" class="page-size-select" title="Items per page" aria-label="Items per page">
-                <option value="5">5</option>
-                <option value="10" selected>10</option>
-                <option value="15">15</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
+            <div class="pagination-container" id="paginationControls">
+                <button id="prevPage" class="btn-pagination">&laquo; Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextPage" class="btn-pagination">Next &raquo;</button>
+            </div>
 
-        <div id="playersList" class="players-list">
-            <div class="loading">
-                <div class="spinner"></div>
+            <div id="emptyState" class="empty-state u-hidden">
+                <p>No players found.</p>
             </div>
         </div>
 
-        <div class="pagination-container" id="paginationControls">
-            <button id="prevPage" class="btn-pagination">&laquo; Previous</button>
-            <span id="pageInfo">Page 1 of 1</span>
-            <button id="nextPage" class="btn-pagination">Next &raquo;</button>
-        </div>
+        <div id="toast-container"></div>
 
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <p>No players found.</p>
-        </div>
-    </div>
-
-    <div id="toast-container"></div>
-
-    <script src="script.js"></script>
-</body>
+        <script src="../config/supabase.js"></script>
+        <script src="../config/api-client.js"></script>
+        <script src="../config/ui-state.js"></script>
+        <script src="../config/app-version.js"></script>
+        <script src="../config/validation.js"></script>
+        <script src="../config/register-sw.js"></script>
+        <script src="script.js"></script>
+    </body>
 </html>
-
-
-
-

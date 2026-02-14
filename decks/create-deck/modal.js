@@ -1,5 +1,5 @@
 (function () {
-    const IMAGE_BASE_URL = "https://deckbuilder.egmanevents.com/card_images/digimon/";
+    const IMAGE_BASE_URL = 'https://deckbuilder.egmanevents.com/card_images/digimon/';
     const MODAL_TEMPLATE = `
 <div id="createDeckModal" class="modal-overlay" aria-hidden="true">
     <div class="modal-content">
@@ -42,10 +42,10 @@
 </div>`;
 
     function loadTemplate() {
-        const host = document.getElementById("createDeckModalHost");
+        const host = document.getElementById('createDeckModalHost');
         if (!host) return null;
         host.innerHTML = MODAL_TEMPLATE;
-        return host.querySelector("#createDeckModal");
+        return host.querySelector('#createDeckModal');
     }
 
     function isValidDeckCode(code) {
@@ -54,41 +54,44 @@
     }
 
     async function checkDuplicateDeckName(supabaseUrl, headers, deckName) {
-        const res = await fetch(`${supabaseUrl}/rest/v1/decks?name=eq.${encodeURIComponent(deckName)}&select=id`, { headers });
+        const res = await fetch(
+            `${supabaseUrl}/rest/v1/decks?name=eq.${encodeURIComponent(deckName)}&select=id`,
+            { headers }
+        );
         if (!res.ok) return false;
         const rows = await res.json();
         return rows.length > 0;
     }
 
     async function createDeck(supabaseUrl, headers, deckName, deckCode) {
-        const imageUrl = IMAGE_BASE_URL + deckCode + ".webp";
+        const imageUrl = IMAGE_BASE_URL + deckCode + '.webp';
 
         const deckRes = await fetch(`${supabaseUrl}/rest/v1/decks`, {
-            method: "POST",
+            method: 'POST',
             headers: {
                 ...headers,
-                "Prefer": "return=representation"
+                Prefer: 'return=representation'
             },
             body: JSON.stringify([{ name: deckName }])
         });
 
         if (!deckRes.ok) {
-            throw new Error("Error creating deck");
+            throw new Error('Error creating deck');
         }
 
         const createdDeck = (await deckRes.json())[0];
         const imageRes = await fetch(`${supabaseUrl}/rest/v1/deck_images`, {
-            method: "POST",
+            method: 'POST',
             headers,
             body: JSON.stringify([{ deck_id: createdDeck.id, image_url: imageUrl }])
         });
 
         if (!imageRes.ok) {
             await fetch(`${supabaseUrl}/rest/v1/decks?id=eq.${createdDeck.id}`, {
-                method: "DELETE",
+                method: 'DELETE',
                 headers
             });
-            throw new Error("Error saving deck image");
+            throw new Error('Error saving deck image');
         }
     }
 
@@ -99,98 +102,98 @@
         const modal = loadTemplate();
         if (!modal) return;
 
-        const openBtn = document.getElementById("btnOpenCreateDeckModal");
-        const closeBtn = document.getElementById("btnCloseCreateDeckModal");
-        const form = document.getElementById("createDeckForm");
-        const codeInput = document.getElementById("createDeckCode");
-        const nameInput = document.getElementById("createDeckName");
-        const codeExamples = document.querySelectorAll(".code-example");
-        const preview = document.getElementById("createDeckPreview");
-        const previewImage = document.getElementById("createDeckPreviewImage");
+        const openBtn = document.getElementById('btnOpenCreateDeckModal');
+        const closeBtn = document.getElementById('btnCloseCreateDeckModal');
+        const form = document.getElementById('createDeckForm');
+        const codeInput = document.getElementById('createDeckCode');
+        const nameInput = document.getElementById('createDeckName');
+        const codeExamples = document.querySelectorAll('.code-example');
+        const preview = document.getElementById('createDeckPreview');
+        const previewImage = document.getElementById('createDeckPreviewImage');
 
         const updatePreview = () => {
             if (!codeInput || !preview || !previewImage) return;
             const code = codeInput.value.trim().toUpperCase();
 
             if (!isValidDeckCode(code)) {
-                preview.style.display = "none";
-                previewImage.removeAttribute("src");
+                preview.style.display = 'none';
+                previewImage.removeAttribute('src');
                 return;
             }
 
-            const imageUrl = IMAGE_BASE_URL + code + ".webp";
+            const imageUrl = IMAGE_BASE_URL + code + '.webp';
             previewImage.src = imageUrl;
-            preview.style.display = "flex";
+            preview.style.display = 'flex';
         };
 
         const closeModal = () => {
-            modal.classList.remove("active");
-            modal.setAttribute("aria-hidden", "true");
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
         };
 
         if (openBtn) {
-            openBtn.addEventListener("click", () => {
-                if (nameInput) nameInput.value = "";
-                if (codeInput) codeInput.value = "";
-                if (preview) preview.style.display = "none";
-                if (previewImage) previewImage.removeAttribute("src");
-                modal.classList.add("active");
-                modal.setAttribute("aria-hidden", "false");
+            openBtn.addEventListener('click', () => {
+                if (nameInput) nameInput.value = '';
+                if (codeInput) codeInput.value = '';
+                if (preview) preview.style.display = 'none';
+                if (previewImage) previewImage.removeAttribute('src');
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
             });
         }
 
-        if (closeBtn) closeBtn.addEventListener("click", closeModal);
-        modal.addEventListener("click", (e) => {
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
 
         if (codeInput) {
-            codeInput.addEventListener("input", () => {
+            codeInput.addEventListener('input', () => {
                 codeInput.value = codeInput.value.toUpperCase();
                 updatePreview();
             });
         }
 
         if (previewImage && preview) {
-            previewImage.addEventListener("error", () => {
-                preview.style.display = "none";
+            previewImage.addEventListener('error', () => {
+                preview.style.display = 'none';
             });
-            previewImage.addEventListener("load", () => {
-                if (previewImage.getAttribute("src")) {
-                    preview.style.display = "flex";
+            previewImage.addEventListener('load', () => {
+                if (previewImage.getAttribute('src')) {
+                    preview.style.display = 'flex';
                 }
             });
         }
 
         if (codeExamples.length && codeInput) {
             codeExamples.forEach((example) => {
-                example.addEventListener("click", () => {
-                    const code = example.getAttribute("data-code") || "";
+                example.addEventListener('click', () => {
+                    const code = example.getAttribute('data-code') || '';
                     codeInput.value = code;
-                    codeInput.dispatchEvent(new Event("input"));
+                    codeInput.dispatchEvent(new Event('input'));
                     codeInput.focus();
-                    example.style.transform = "scale(0.95)";
+                    example.style.transform = 'scale(0.95)';
                     setTimeout(() => {
-                        example.style.transform = "translateY(-2px)";
+                        example.style.transform = 'translateY(-2px)';
                     }, 100);
                 });
             });
         }
 
         if (form) {
-            form.addEventListener("submit", async (e) => {
+            form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const deckName = (nameInput?.value || "").trim();
-                const deckCode = (codeInput?.value || "").trim().toUpperCase();
+                const deckName = (nameInput?.value || '').trim();
+                const deckCode = (codeInput?.value || '').trim().toUpperCase();
 
                 if (!deckName || !deckCode) {
-                    alert("Please fill in all required fields.");
+                    alert('Please fill in all required fields.');
                     return;
                 }
 
                 if (!isValidDeckCode(deckCode)) {
-                    alert("Invalid deck code. Use format like BT16-064.");
+                    alert('Invalid deck code. Use format like BT16-064.');
                     return;
                 }
 
@@ -203,10 +206,10 @@
                 try {
                     await createDeck(supabaseUrl, headers, deckName, deckCode);
                     closeModal();
-                    if (typeof onCreated === "function") await onCreated();
+                    if (typeof onCreated === 'function') await onCreated();
                 } catch (err) {
                     console.error(err);
-                    alert("Error creating deck. Please try again.");
+                    alert('Error creating deck. Please try again.');
                 }
             });
         }

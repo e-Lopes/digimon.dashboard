@@ -1,32 +1,43 @@
-﻿const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
-const headers = {
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-    "Content-Type": "application/json"
-};
-
+﻿const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || 'https://vllqakohumoinpdwnsqa.supabase.co';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || '';
+const headers = window.createSupabaseHeaders
+    ? window.createSupabaseHeaders()
+    : {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+      };
 const TOURNAMENT_NAME_OPTIONS = [
-    "Semanal",
-    "Mensal",
-    "Quinzenal",
-    "Pre-Release",
-    "Top 8",
-    "Win-A-Box",
-    "Evo Cup",
-    "Regulation Battle",
-    "For Fun"
+    'Semanal',
+    'Mensal',
+    'Quinzenal',
+    'Pre-Release',
+    'Top 8',
+    'Win-A-Box',
+    'Evo Cup',
+    'Regulation Battle',
+    'For Fun'
 ];
 
-const SORT_STORAGE_KEY = "tournamentsSort";
-const PER_PAGE_STORAGE_KEY = "tournamentsPerPage";
-const VIEW_STORAGE_KEY = "tournamentsViewMode";
-const DEFAULT_SORT = { field: "tournament_date", direction: "desc" };
-const SORTABLE_FIELDS = ["tournament_date", "total_players"];
-const SORT_DIRECTIONS = ["asc", "desc"];
+const SORT_STORAGE_KEY = 'tournamentsSort';
+const PER_PAGE_STORAGE_KEY = 'tournamentsPerPage';
+const VIEW_STORAGE_KEY = 'tournamentsViewMode';
+const DEFAULT_SORT = { field: 'tournament_date', direction: 'desc' };
+const SORTABLE_FIELDS = ['tournament_date', 'total_players'];
+const SORT_DIRECTIONS = ['asc', 'desc'];
 const MONTH_NAMES_PT = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
 ];
 
 let tournaments = [];
@@ -41,10 +52,10 @@ let createDecks = [];
 let createResults = [];
 let selectedTournamentId = null;
 let currentViewMode = getSavedViewMode();
-let calendarMonthKey = "";
+let calendarMonthKey = '';
 
 // ============================================================
-// FUNÃƒâ€¡ÃƒÆ’O DE FORMATAÃƒâ€¡ÃƒÆ’O DE DATA
+// FORMAT DATE FUNCTION
 // ============================================================
 function getSavedSort() {
     try {
@@ -53,7 +64,9 @@ function getSavedSort() {
 
         const parsed = JSON.parse(raw);
         const field = SORTABLE_FIELDS.includes(parsed?.field) ? parsed.field : DEFAULT_SORT.field;
-        const direction = SORT_DIRECTIONS.includes(parsed?.direction) ? parsed.direction : DEFAULT_SORT.direction;
+        const direction = SORT_DIRECTIONS.includes(parsed?.direction)
+            ? parsed.direction
+            : DEFAULT_SORT.direction;
 
         return { field, direction };
     } catch (error) {
@@ -80,7 +93,7 @@ function savePerPagePreference() {
 
 function getSavedViewMode() {
     const saved = localStorage.getItem(VIEW_STORAGE_KEY);
-    return saved === "calendar" ? "calendar" : "list";
+    return saved === 'calendar' ? 'calendar' : 'list';
 }
 
 function saveViewMode() {
@@ -88,121 +101,145 @@ function saveViewMode() {
 }
 
 function formatDate(dateString) {
-    if (!dateString) return "-";
+    if (!dateString) return '-';
     const [year, month, day] = dateString.split('-');
     return `${day}/${month}/${year}`;
 }
 
 function getAssetPrefix() {
-    return window.location.pathname.includes("/torneios/list-tournaments/") ? "../../" : "";
+    return window.location.pathname.includes('/torneios/list-tournaments/') ? '../../' : '';
 }
 
 function normalizeStoreName(name) {
-    return String(name || "")
+    return String(name || '')
         .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 }
 
 function resolveStoreIcon(storeName) {
     const base = `${getAssetPrefix()}icons/stores/`;
     const normalized = normalizeStoreName(storeName);
-    if (normalized.includes("gladiator")) return `${base}Gladiators.png`;
-    if (normalized.includes("meruru")) return `${base}Meruru.svg`;
-    if (normalized.includes("taverna")) return `${base}Taverna.png`;
-    if (normalized.includes("tcgbr") || normalized.includes("tcg br")) return `${base}TCGBR.png`;
+    if (normalized.includes('gladiator')) return `${base}Gladiators.png`;
+    if (normalized.includes('meruru')) return `${base}Meruru.svg`;
+    if (normalized.includes('taverna')) return `${base}Taverna.png`;
+    if (normalized.includes('tcgbr') || normalized.includes('tcg br')) return `${base}TCGBR.png`;
     return `${base}images.png`;
 }
 
 // ============================================================
-// INICIALIZAÃƒâ€¡ÃƒÆ’O - DOMContentLoaded
+// INIT - DOMContentLoaded
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
     setupPerPageSelector();
     setupViewToggle();
+    bindStaticActions();
     await loadTournaments();
     setupFilters();
     setupSorting();
     applyFilters();
-    
-    // Event listeners para modal de criaÃƒÂ§ÃƒÂ£o
-    document.getElementById("btnCreateTournament").addEventListener("click", openCreateTournamentModal);
-    
-    // Fechar modal de criaÃƒÂ§ÃƒÂ£o ao clicar fora dele
-    document.getElementById("createModal").addEventListener("click", (e) => {
-        if (e.target === document.getElementById("createModal")) {
+
+    // Event listeners for create modal
+    document
+        .getElementById('btnCreateTournament')
+        .addEventListener('click', openCreateTournamentModal);
+
+    // Close create modal when clicking outside
+    document.getElementById('createModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('createModal')) {
             closeCreateModal();
         }
     });
 
-    // Fechar modal de ediÃƒÂ§ÃƒÂ£o ao clicar fora dele
-    document.getElementById("editModal").addEventListener("click", (e) => {
-        if (e.target === document.getElementById("editModal")) {
+    // Close edit modal when clicking outside
+    document.getElementById('editModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('editModal')) {
             closeEditModal();
         }
     });
-    
-    // Submit do formulÃƒÂ¡rio de criaÃƒÂ§ÃƒÂ£o
-    document.getElementById("createTournamentForm").addEventListener("submit", createTournamentFormSubmit);
-    document.getElementById("btnAddResultRow").addEventListener("click", addCreateResultRow);
-    document.getElementById("createTotalPlayers").addEventListener("input", syncCreateResultsByTotal);
-    
-    // Submit do formulÃƒÂ¡rio de ediÃƒÂ§ÃƒÂ£o
-    document.getElementById("editTournamentForm").addEventListener("submit", editTournamentFormSubmit);
+
+    // Submit create form
+    document
+        .getElementById('createTournamentForm')
+        .addEventListener('submit', createTournamentFormSubmit);
+    document.getElementById('btnAddResultRow').addEventListener('click', addCreateResultRow);
+    document
+        .getElementById('createTotalPlayers')
+        .addEventListener('input', syncCreateResultsByTotal);
+
+    // Submit edit form
+    document
+        .getElementById('editTournamentForm')
+        .addEventListener('submit', editTournamentFormSubmit);
 });
+
+function bindStaticActions() {
+    const btnCreateCancel = document.getElementById('btnCreateCancel');
+    const btnEditCancel = document.getElementById('btnEditCancel');
+
+    if (btnCreateCancel) {
+        btnCreateCancel.addEventListener('click', closeCreateModal);
+    }
+    if (btnEditCancel) {
+        btnEditCancel.addEventListener('click', closeEditModal);
+    }
+}
 
 // ============================================================
 // CARREGAMENTO DE TORNEIOS
 // ============================================================
 async function loadTournaments() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament?select=id,store_id,tournament_date,store:stores(name),tournament_name,total_players,instagram_link&order=tournament_date.desc`, { headers });
-        if (!res.ok) throw new Error("Erro ao carregar torneios.");
+        const res = await fetch(
+            `${SUPABASE_URL}/rest/v1/tournament?select=id,store_id,tournament_date,store:stores(name),tournament_name,total_players,instagram_link&order=tournament_date.desc`,
+            { headers }
+        );
+        if (!res.ok) throw new Error('Erro ao carregar torneios.');
         tournaments = await res.json();
         populateFilterOptions();
     } catch (err) {
         console.error(err);
-        alert("Falha ao carregar dados.");
+        alert('Falha ao carregar dados.');
     }
 }
 
 function setupFilters() {
-    const filterStore = document.getElementById("filterStore");
-    const filterTournamentName = document.getElementById("filterTournamentName");
-    const filterInstagram = document.getElementById("filterInstagram");
-    const filterMonthYear = document.getElementById("filterMonthYear");
-    const btnClearFilters = document.getElementById("btnClearFilters");
+    const filterStore = document.getElementById('filterStore');
+    const filterTournamentName = document.getElementById('filterTournamentName');
+    const filterInstagram = document.getElementById('filterInstagram');
+    const filterMonthYear = document.getElementById('filterMonthYear');
+    const btnClearFilters = document.getElementById('btnClearFilters');
 
-    if (filterStore) filterStore.addEventListener("change", applyFilters);
-    if (filterTournamentName) filterTournamentName.addEventListener("change", applyFilters);
-    if (filterInstagram) filterInstagram.addEventListener("change", applyFilters);
+    if (filterStore) filterStore.addEventListener('change', applyFilters);
+    if (filterTournamentName) filterTournamentName.addEventListener('change', applyFilters);
+    if (filterInstagram) filterInstagram.addEventListener('change', applyFilters);
     if (filterMonthYear) {
-        filterMonthYear.addEventListener("change", () => {
-            calendarMonthKey = filterMonthYear.value || "";
+        filterMonthYear.addEventListener('change', () => {
+            calendarMonthKey = filterMonthYear.value || '';
             applyFilters();
         });
     }
     if (btnClearFilters) {
-        btnClearFilters.addEventListener("click", () => {
-            if (filterStore) filterStore.value = "";
-            if (filterTournamentName) filterTournamentName.value = "";
-            if (filterInstagram) filterInstagram.value = "";
-            if (filterMonthYear) filterMonthYear.value = "";
-            calendarMonthKey = "";
+        btnClearFilters.addEventListener('click', () => {
+            if (filterStore) filterStore.value = '';
+            if (filterTournamentName) filterTournamentName.value = '';
+            if (filterInstagram) filterInstagram.value = '';
+            if (filterMonthYear) filterMonthYear.value = '';
+            calendarMonthKey = '';
             applyFilters();
         });
     }
 }
 
 function populateFilterOptions() {
-    const filterStore = document.getElementById("filterStore");
-    const filterTournamentName = document.getElementById("filterTournamentName");
-    const filterMonthYear = document.getElementById("filterMonthYear");
+    const filterStore = document.getElementById('filterStore');
+    const filterTournamentName = document.getElementById('filterTournamentName');
+    const filterMonthYear = document.getElementById('filterMonthYear');
     if (!filterStore || !filterTournamentName) return;
 
     const selectedStore = filterStore.value;
     const selectedName = filterTournamentName.value;
-    const selectedMonthYear = filterMonthYear?.value || "";
+    const selectedMonthYear = filterMonthYear?.value || '';
 
     const storesMap = new Map();
     tournaments.forEach((t) => {
@@ -210,61 +247,65 @@ function populateFilterOptions() {
     });
     const stores = Array.from(storesMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
 
-    filterStore.innerHTML = `<option value="">All stores</option>` +
-        stores.map(([id, name]) => `<option value="${id}">${name}</option>`).join("");
-    if (selectedStore && storesMap.has(String(selectedStore))) filterStore.value = String(selectedStore);
+    filterStore.innerHTML =
+        `<option value="">All stores</option>` +
+        stores.map(([id, name]) => `<option value="${id}">${name}</option>`).join('');
+    if (selectedStore && storesMap.has(String(selectedStore)))
+        filterStore.value = String(selectedStore);
 
-    filterTournamentName.innerHTML = `<option value="">All names</option>` +
-        TOURNAMENT_NAME_OPTIONS.map((name) => `<option value="${name}">${name}</option>`).join("");
-    if (selectedName && TOURNAMENT_NAME_OPTIONS.includes(selectedName)) filterTournamentName.value = selectedName;
+    filterTournamentName.innerHTML =
+        `<option value="">All names</option>` +
+        TOURNAMENT_NAME_OPTIONS.map((name) => `<option value="${name}">${name}</option>`).join('');
+    if (selectedName && TOURNAMENT_NAME_OPTIONS.includes(selectedName))
+        filterTournamentName.value = selectedName;
 
     if (filterMonthYear) {
         const monthKeys = Array.from(
-            new Set(
-                tournaments
-                    .map((t) => getMonthYearKey(t.tournament_date))
-                    .filter(Boolean)
-            )
+            new Set(tournaments.map((t) => getMonthYearKey(t.tournament_date)).filter(Boolean))
         ).sort((a, b) => b.localeCompare(a));
 
-        filterMonthYear.innerHTML = `<option value="">All months</option>` +
+        filterMonthYear.innerHTML =
+            `<option value="">All months</option>` +
             monthKeys
                 .map((key) => `<option value="${key}">${formatMonthYearLabel(key)}</option>`)
-                .join("");
-        if (selectedMonthYear && monthKeys.includes(selectedMonthYear)) filterMonthYear.value = selectedMonthYear;
+                .join('');
+        if (selectedMonthYear && monthKeys.includes(selectedMonthYear))
+            filterMonthYear.value = selectedMonthYear;
     }
 }
 
 function getFilteredTournaments() {
-    const filterStore = document.getElementById("filterStore")?.value || "";
-    const filterTournamentName = document.getElementById("filterTournamentName")?.value || "";
-    const filterInstagram = document.getElementById("filterInstagram")?.value || "";
-    const filterMonthYear = document.getElementById("filterMonthYear")?.value || "";
+    const filterStore = document.getElementById('filterStore')?.value || '';
+    const filterTournamentName = document.getElementById('filterTournamentName')?.value || '';
+    const filterInstagram = document.getElementById('filterInstagram')?.value || '';
+    const filterMonthYear = document.getElementById('filterMonthYear')?.value || '';
 
     return tournaments.filter((t) => {
         const byStore = !filterStore || String(t.store_id) === String(filterStore);
-        const byName = !filterTournamentName || (t.tournament_name || "") === filterTournamentName;
-        const hasInstagramLink = Boolean((t.instagram_link || "").trim());
-        const byInstagram = !filterInstagram ||
-            (filterInstagram === "with_link" && hasInstagramLink) ||
-            (filterInstagram === "without_link" && !hasInstagramLink);
-        const byMonthYear = !filterMonthYear || getMonthYearKey(t.tournament_date) === filterMonthYear;
+        const byName = !filterTournamentName || (t.tournament_name || '') === filterTournamentName;
+        const hasInstagramLink = Boolean((t.instagram_link || '').trim());
+        const byInstagram =
+            !filterInstagram ||
+            (filterInstagram === 'with_link' && hasInstagramLink) ||
+            (filterInstagram === 'without_link' && !hasInstagramLink);
+        const byMonthYear =
+            !filterMonthYear || getMonthYearKey(t.tournament_date) === filterMonthYear;
         return byStore && byName && byInstagram && byMonthYear;
     });
 }
 
 function getMonthYearKey(dateString) {
-    if (!dateString || typeof dateString !== "string") return "";
-    const parts = dateString.split("-");
-    if (parts.length < 2) return "";
+    if (!dateString || typeof dateString !== 'string') return '';
+    const parts = dateString.split('-');
+    if (parts.length < 2) return '';
     const year = parts[0];
     const month = parts[1];
-    if (!/^\d{4}$/.test(year) || !/^\d{2}$/.test(month)) return "";
+    if (!/^\d{4}$/.test(year) || !/^\d{2}$/.test(month)) return '';
     return `${year}-${month}`;
 }
 
 function formatMonthYearLabel(monthKey) {
-    const parts = String(monthKey).split("-");
+    const parts = String(monthKey).split('-');
     if (parts.length !== 2) return monthKey;
     const year = parts[0];
     const monthIndex = Number(parts[1]) - 1;
@@ -276,7 +317,10 @@ function applyFilters() {
     filteredTournaments = sortTournaments(getFilteredTournaments());
     currentPage = 1;
 
-    if (selectedTournamentId && !filteredTournaments.some((t) => String(t.id) === String(selectedTournamentId))) {
+    if (
+        selectedTournamentId &&
+        !filteredTournaments.some((t) => String(t.id) === String(selectedTournamentId))
+    ) {
         selectedTournamentId = null;
         clearTournamentDetails();
     }
@@ -285,12 +329,12 @@ function applyFilters() {
 }
 
 function setupViewToggle() {
-    const button = document.getElementById("btnToggleView");
+    const button = document.getElementById('btnToggleView');
     if (!button) return;
-    button.addEventListener("click", () => {
-        currentViewMode = currentViewMode === "list" ? "calendar" : "list";
+    button.addEventListener('click', () => {
+        currentViewMode = currentViewMode === 'list' ? 'calendar' : 'list';
         saveViewMode();
-        if (currentViewMode === "calendar") ensureCalendarMonthKey();
+        if (currentViewMode === 'calendar') ensureCalendarMonthKey();
         renderCurrentView();
     });
 }
@@ -308,11 +352,11 @@ function getAvailableCalendarMonthKeys() {
 function ensureCalendarMonthKey() {
     const available = getAvailableCalendarMonthKeys();
     if (!available.length) {
-        calendarMonthKey = "";
+        calendarMonthKey = '';
         return;
     }
 
-    const selected = document.getElementById("filterMonthYear")?.value || "";
+    const selected = document.getElementById('filterMonthYear')?.value || '';
     if (selected && available.includes(selected)) {
         calendarMonthKey = selected;
         return;
@@ -342,23 +386,24 @@ function moveCalendarYear(step) {
     const available = getAvailableCalendarMonthKeys();
     if (!available.length || !calendarMonthKey) return;
 
-    const [yearStr, monthStr] = calendarMonthKey.split("-");
+    const [yearStr, monthStr] = calendarMonthKey.split('-');
     const currentYear = Number(yearStr);
     const currentMonth = Number(monthStr);
     if (!Number.isInteger(currentYear) || !Number.isInteger(currentMonth)) return;
 
-    const targetYears = Array.from(new Set(available.map((key) => Number(key.split("-")[0]))))
+    const targetYears = Array.from(new Set(available.map((key) => Number(key.split('-')[0]))))
         .filter((year) => Number.isInteger(year))
         .sort((a, b) => a - b);
 
-    const targetYear = step < 0
-        ? [...targetYears].reverse().find((year) => year < currentYear)
-        : targetYears.find((year) => year > currentYear);
+    const targetYear =
+        step < 0
+            ? [...targetYears].reverse().find((year) => year < currentYear)
+            : targetYears.find((year) => year > currentYear);
     if (!targetYear) return;
 
     const monthsInYear = available
-        .filter((key) => Number(key.split("-")[0]) === targetYear)
-        .map((key) => ({ key, month: Number(key.split("-")[1]) }))
+        .filter((key) => Number(key.split('-')[0]) === targetYear)
+        .map((key) => ({ key, month: Number(key.split('-')[1]) }))
         .sort((a, b) => a.month - b.month);
     if (!monthsInYear.length) return;
 
@@ -377,42 +422,42 @@ function moveCalendarYear(step) {
 }
 
 function renderCurrentView() {
-    const listContainer = document.getElementById("listViewContainer");
-    const calendarContainer = document.getElementById("calendarViewContainer");
-    const calendarDetails = document.getElementById("calendarTournamentDetails");
-    const toggleButton = document.getElementById("btnToggleView");
-    const perPageField = document.querySelector(".per-page-filter");
+    const listContainer = document.getElementById('listViewContainer');
+    const calendarContainer = document.getElementById('calendarViewContainer');
+    const calendarDetails = document.getElementById('calendarTournamentDetails');
+    const toggleButton = document.getElementById('btnToggleView');
+    const perPageField = document.querySelector('.per-page-filter');
 
-    if (currentViewMode === "calendar") {
-        if (listContainer) listContainer.classList.add("is-hidden");
-        if (calendarContainer) calendarContainer.classList.remove("is-hidden");
-        if (calendarDetails) calendarDetails.classList.remove("is-hidden");
-        if (toggleButton) toggleButton.classList.add("is-calendar-active");
+    if (currentViewMode === 'calendar') {
+        if (listContainer) listContainer.classList.add('is-hidden');
+        if (calendarContainer) calendarContainer.classList.remove('is-hidden');
+        if (calendarDetails) calendarDetails.classList.remove('is-hidden');
+        if (toggleButton) toggleButton.classList.add('is-calendar-active');
         updateToggleViewButton();
-        if (perPageField) perPageField.classList.add("is-hidden");
+        if (perPageField) perPageField.classList.add('is-hidden');
         ensureCalendarMonthKey();
         renderCalendarView();
         return;
     }
 
-    if (listContainer) listContainer.classList.remove("is-hidden");
-    if (calendarContainer) calendarContainer.classList.add("is-hidden");
+    if (listContainer) listContainer.classList.remove('is-hidden');
+    if (calendarContainer) calendarContainer.classList.add('is-hidden');
     if (calendarDetails) {
-        calendarDetails.classList.add("is-hidden");
-        calendarDetails.innerHTML = "";
+        calendarDetails.classList.add('is-hidden');
+        calendarDetails.innerHTML = '';
     }
-    if (toggleButton) toggleButton.classList.remove("is-calendar-active");
+    if (toggleButton) toggleButton.classList.remove('is-calendar-active');
     updateToggleViewButton();
-    if (perPageField) perPageField.classList.remove("is-hidden");
+    if (perPageField) perPageField.classList.remove('is-hidden');
     renderTable();
-    renderPagination();
+    // PAGINATION
 }
 
 function updateToggleViewButton() {
-    const button = document.getElementById("btnToggleView");
+    const button = document.getElementById('btnToggleView');
     if (!button) return;
 
-    if (currentViewMode === "calendar") {
+    if (currentViewMode === 'calendar') {
         button.innerHTML = `
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M3 6h18"/>
@@ -420,8 +465,8 @@ function updateToggleViewButton() {
                 <path d="M3 18h18"/>
             </svg>
         `;
-        button.title = "Switch to list";
-        button.setAttribute("aria-label", "Switch to list");
+        button.title = 'Switch to list';
+        button.setAttribute('aria-label', 'Switch to list');
         return;
     }
 
@@ -431,18 +476,18 @@ function updateToggleViewButton() {
             <path d="M8 2v4M16 2v4M3 10h18"/>
         </svg>
     `;
-    button.title = "Switch to calendar";
-    button.setAttribute("aria-label", "Switch to calendar");
+    button.title = 'Switch to calendar';
+    button.setAttribute('aria-label', 'Switch to calendar');
 }
 
 function renderCalendarView() {
-    const container = document.getElementById("calendarViewContainer");
+    const container = document.getElementById('calendarViewContainer');
     if (!container || !window.TournamentCalendarView) return;
     ensureCalendarMonthKey();
     const available = getAvailableCalendarMonthKeys();
     const currentIndex = available.indexOf(calendarMonthKey);
-    const currentYear = Number((calendarMonthKey || "").split("-")[0]);
-    const years = Array.from(new Set(available.map((key) => Number(key.split("-")[0]))))
+    const currentYear = Number((calendarMonthKey || '').split('-')[0]);
+    const years = Array.from(new Set(available.map((key) => Number(key.split('-')[0]))))
         .filter((year) => Number.isInteger(year))
         .sort((a, b) => a - b);
     const hasPrevYear = years.some((year) => year < currentYear);
@@ -466,47 +511,47 @@ function renderCalendarView() {
 }
 
 function openCalendarTournamentDetails(eventData) {
-    const container = document.getElementById("calendarTournamentDetails");
+    const container = document.getElementById('calendarTournamentDetails');
     if (!container || !eventData) return;
 
-    container.classList.remove("is-hidden");
+    container.classList.remove('is-hidden');
     container.innerHTML = `<div class="details-block">Loading details...</div>`;
 
     const tournament = {
-        id: eventData.id || "",
-        store_id: eventData.storeId || "",
-        tournament_date: eventData.tournamentDate || "",
-        tournament_name: eventData.tournamentName || "Tournament",
-        total_players: eventData.totalPlayers || "",
-        store: { name: eventData.storeName || "Store" }
+        id: eventData.id || '',
+        store_id: eventData.storeId || '',
+        tournament_date: eventData.tournamentDate || '',
+        tournament_name: eventData.tournamentName || 'Tournament',
+        total_players: eventData.totalPlayers || '',
+        store: { name: eventData.storeName || 'Store' }
     };
     renderTournamentDetails(tournament, container);
 }
 
 function setupPerPageSelector() {
-    const perPageSelect = document.getElementById("perPageSelect");
+    const perPageSelect = document.getElementById('perPageSelect');
     if (!perPageSelect) return;
 
     perPage = getSavedPerPage();
-    perPageSelect.innerHTML = PER_PAGE_OPTIONS
-        .map((value) => `<option value="${value}">${value}</option>`)
-        .join("");
+    perPageSelect.innerHTML = PER_PAGE_OPTIONS.map(
+        (value) => `<option value="${value}">${value}</option>`
+    ).join('');
     perPageSelect.value = String(perPage);
 
-    perPageSelect.addEventListener("change", () => {
+    perPageSelect.addEventListener('change', () => {
         const nextValue = Number(perPageSelect.value);
         perPage = PER_PAGE_OPTIONS.includes(nextValue) ? nextValue : DEFAULT_PER_PAGE;
         savePerPagePreference();
         currentPage = 1;
         renderTable();
-        renderPagination();
+        // PAGINATION
     });
 }
 
 function setupSorting() {
-    const sortButtons = document.querySelectorAll(".sort-button[data-sort-field]");
+    const sortButtons = document.querySelectorAll('.sort-button[data-sort-field]');
     sortButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
+        btn.addEventListener('click', () => {
             const field = btn.dataset.sortField;
             if (!field) return;
             toggleSort(field);
@@ -517,10 +562,10 @@ function setupSorting() {
 
 function toggleSort(field) {
     if (currentSort.field === field) {
-        currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc";
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
     } else {
         currentSort.field = field;
-        currentSort.direction = field === "tournament_date" ? "desc" : "asc";
+        currentSort.direction = field === 'tournament_date' ? 'desc' : 'asc';
     }
     saveSortPreference();
     updateSortIndicators();
@@ -529,16 +574,16 @@ function toggleSort(field) {
 
 function sortTournaments(list) {
     const sorted = [...list];
-    const direction = currentSort.direction === "asc" ? 1 : -1;
+    const direction = currentSort.direction === 'asc' ? 1 : -1;
 
     sorted.sort((a, b) => {
-        if (currentSort.field === "tournament_date") {
-            const aTime = Date.parse(a.tournament_date || "") || 0;
-            const bTime = Date.parse(b.tournament_date || "") || 0;
+        if (currentSort.field === 'tournament_date') {
+            const aTime = Date.parse(a.tournament_date || '') || 0;
+            const bTime = Date.parse(b.tournament_date || '') || 0;
             return (aTime - bTime) * direction;
         }
 
-        if (currentSort.field === "total_players") {
+        if (currentSort.field === 'total_players') {
             const aPlayers = Number(a.total_players) || 0;
             const bPlayers = Number(b.total_players) || 0;
             return (aPlayers - bPlayers) * direction;
@@ -551,78 +596,87 @@ function sortTournaments(list) {
 }
 
 function updateSortIndicators() {
-    const indicators = document.querySelectorAll("[data-sort-indicator]");
+    const indicators = document.querySelectorAll('[data-sort-indicator]');
     indicators.forEach((el) => {
         const field = el.dataset.sortIndicator;
         if (field === currentSort.field) {
-            el.textContent = currentSort.direction === "asc" ? "▲" : "▼";
-            el.classList.add("is-active");
+            el.textContent = currentSort.direction === 'asc' ? '\u25B2' : '\u25BC';
+            el.classList.add('is-active');
         } else {
-            el.textContent = "⇅";
-            el.classList.remove("is-active");
+            el.textContent = '\u21C5';
+            el.classList.remove('is-active');
         }
     });
 }
 
 // ============================================================
-// RENDERIZAÃƒâ€¡ÃƒÆ’O DA TABELA
+// RENDER TABLE
 // ============================================================
 function renderTable() {
-    const tbody = document.querySelector("#tournamentsTable tbody");
-    tbody.innerHTML = "";
+    const tbody = document.querySelector('#tournamentsTable tbody');
+    tbody.innerHTML = '';
 
     const start = (currentPage - 1) * perPage;
     const end = start + perPage;
     const slice = filteredTournaments.slice(start, end);
 
-    slice.forEach(t => {
-        const tr = document.createElement("tr");
-        tr.classList.add("clickable-row");
+    slice.forEach((t) => {
+        const tr = document.createElement('tr');
+        tr.classList.add('clickable-row');
         if (selectedTournamentId && String(selectedTournamentId) === String(t.id)) {
-            tr.classList.add("is-active");
+            tr.classList.add('is-active');
         }
-        const instagramLink = t.instagram_link ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">Abrir</a>` : "-";
-        
-        const td1 = document.createElement("td");
-        td1.setAttribute("data-label", "Data:");
+        const instagramLink = t.instagram_link
+            ? `<a href="${t.instagram_link}" target="_blank" style="color: #667eea; text-decoration: none;">Abrir</a>`
+            : '-';
+
+        const td1 = document.createElement('td');
+        td1.setAttribute('data-label', 'Data:');
         td1.textContent = formatDate(t.tournament_date);
-        
-        const td2 = document.createElement("td");
-        td2.setAttribute("data-label", "Loja:");
-        td2.classList.add("table-store-cell");
-        const storeName = t.store?.name || "-";
-        const storeContent = document.createElement("span");
-        storeContent.className = "table-store-content";
-        const storeIcon = document.createElement("img");
-        storeIcon.className = "table-store-icon";
+
+        const td2 = document.createElement('td');
+        td2.setAttribute('data-label', 'Loja:');
+        td2.classList.add('table-store-cell');
+        const storeName = t.store?.name || '-';
+        const storeContent = document.createElement('span');
+        storeContent.className = 'table-store-content';
+        const storeIcon = document.createElement('img');
+        storeIcon.className = 'table-store-icon';
         storeIcon.src = resolveStoreIcon(storeName);
         storeIcon.alt = storeName;
-        const storeText = document.createElement("span");
+        const storeText = document.createElement('span');
         storeText.textContent = storeName;
         storeContent.appendChild(storeIcon);
         storeContent.appendChild(storeText);
         td2.appendChild(storeContent);
-        
-        const td3 = document.createElement("td");
-        td3.setAttribute("data-label", "Nome:");
-        td3.textContent = t.tournament_name || "-";
-        
-        const td4 = document.createElement("td");
-        td4.setAttribute("data-label", "Players:");
-        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : "-";
-        
-        const td5 = document.createElement("td");
-        td5.setAttribute("data-label", "Instagram:");
+
+        const td3 = document.createElement('td');
+        td3.setAttribute('data-label', 'Nome:');
+        td3.textContent = t.tournament_name || '-';
+
+        const td4 = document.createElement('td');
+        td4.setAttribute('data-label', 'Players:');
+        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : '-';
+
+        const td5 = document.createElement('td');
+        td5.setAttribute('data-label', 'Instagram:');
         td5.innerHTML = instagramLink;
 
-        const td6 = document.createElement("td");
-        td6.setAttribute("data-label", "Acoes:");
-        td6.innerHTML = `<button class="btn-edit btn-icon-only" type="button" title="Edit tournament" aria-label="Edit tournament" onclick="event.stopPropagation(); editTournament('${t.id}')">
+        const td6 = document.createElement('td');
+        td6.setAttribute('data-label', 'Acoes:');
+        td6.innerHTML = `<button class="btn-edit btn-icon-only" type="button" title="Edit tournament" aria-label="Edit tournament" data-action="edit-tournament" data-tournament-id="${t.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="M12 20h9"/>
                 <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
             </svg>
         </button>`;
+        const editTournamentButton = td6.querySelector('[data-action="edit-tournament"]');
+        if (editTournamentButton) {
+            editTournamentButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                editTournament(t.id);
+            });
+        }
 
         tr.appendChild(td1);
         tr.appendChild(td2);
@@ -630,18 +684,18 @@ function renderTable() {
         tr.appendChild(td4);
         tr.appendChild(td5);
         tr.appendChild(td6);
-        tr.addEventListener("click", () => toggleTournamentDetails(t));
-        
+        tr.addEventListener('click', () => toggleTournamentDetails(t));
+
         tbody.appendChild(tr);
 
         if (selectedTournamentId && String(selectedTournamentId) === String(t.id)) {
-            const detailsTr = document.createElement("tr");
-            detailsTr.className = "details-row";
-            detailsTr.setAttribute("data-details-for", String(t.id));
+            const detailsTr = document.createElement('tr');
+            detailsTr.className = 'details-row';
+            detailsTr.setAttribute('data-details-for', String(t.id));
 
-            const detailsTd = document.createElement("td");
+            const detailsTd = document.createElement('td');
             detailsTd.colSpan = 6;
-            detailsTd.className = "details-row-cell";
+            detailsTd.className = 'details-row-cell';
             detailsTd.innerHTML = `
                 <div class="tournament-inline-details-content" data-details-content-for="${String(t.id)}">
                     <div class="details-block">Loading details...</div>
@@ -654,28 +708,28 @@ function renderTable() {
     });
 
     if (slice.length === 0) {
-        const tr = document.createElement("tr");
+        const tr = document.createElement('tr');
         tr.innerHTML = `<td colspan="6" style="text-align:center;">Nenhum torneio encontrado</td>`;
         tbody.appendChild(tr);
     }
 }
 
 // ============================================================
-// PAGINAÃƒâ€¡ÃƒÆ’O
+// PAGINATION
 // ============================================================
 function renderPagination() {
     const totalPages = Math.ceil(filteredTournaments.length / perPage);
-    const div = document.getElementById("pagination");
-    div.innerHTML = "";
+    const div = document.getElementById('pagination');
+    div.innerHTML = '';
 
     if (totalPages <= 1) return;
     if (currentPage > totalPages) currentPage = totalPages;
 
     for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
+        const btn = document.createElement('button');
         btn.textContent = i;
-        btn.disabled = (i === currentPage);
-        btn.addEventListener("click", () => {
+        btn.disabled = i === currentPage;
+        btn.addEventListener('click', () => {
             currentPage = i;
             renderTable();
             renderPagination();
@@ -685,45 +739,43 @@ function renderPagination() {
 }
 
 // ============================================================
-// MODAL DE CRIAÃƒâ€¡ÃƒÆ’O
+// CREATE MODAL
 // ============================================================
-async function openCreateTournamentModal(defaultDate = "") {
-    // Limpa o formulÃƒÂ¡rio
-    document.getElementById("createStoreSelect").value = "";
-    const safeDate = /^\d{4}-\d{2}-\d{2}$/.test(defaultDate) ? defaultDate : new Date().toISOString().split('T')[0];
-    document.getElementById("createTournamentDate").value = safeDate;
-    document.getElementById("createTournamentName").value = "";
-    document.getElementById("createTotalPlayers").value = "";
-    document.getElementById("createInstagramLink").value = "";
+async function openCreateTournamentModal(defaultDate = '') {
+    // Reset form
+    document.getElementById('createStoreSelect').value = '';
+    const safeDate = /^\d{4}-\d{2}-\d{2}$/.test(defaultDate)
+        ? defaultDate
+        : new Date().toISOString().split('T')[0];
+    document.getElementById('createTournamentDate').value = safeDate;
+    document.getElementById('createTournamentName').value = '';
+    document.getElementById('createTotalPlayers').value = '';
+    document.getElementById('createInstagramLink').value = '';
 
     createResults = [];
-    
+
     // Carrega dados base para o modal
     try {
-        await Promise.all([
-            loadStoresToCreate(),
-            loadPlayersToCreate(),
-            loadDecksToCreate()
-        ]);
+        await Promise.all([loadStoresToCreate(), loadPlayersToCreate(), loadDecksToCreate()]);
         renderCreateResultsRows();
     } catch (err) {
-        console.error("Erro ao abrir modal de criaÃƒÂ§ÃƒÂ£o:", err);
-        alert("Falha ao carregar dados de players/decks/lojas.");
+        // CREATE MODAL
+        alert('Falha ao carregar dados de players/decks/lojas.');
         return;
     }
-    
+
     // Abre o modal
-    document.getElementById("createModal").classList.add("active");
+    document.getElementById('createModal').classList.add('active');
 }
 
 function closeCreateModal() {
-    document.getElementById("createModal").classList.remove("active");
+    document.getElementById('createModal').classList.remove('active');
     createResults = [];
     renderCreateResultsRows();
 }
 
 function syncCreateResultsByTotal() {
-    const totalInput = document.getElementById("createTotalPlayers");
+    const totalInput = document.getElementById('createTotalPlayers');
     const qty = parseInt(totalInput.value, 10);
 
     if (!Number.isInteger(qty) || qty < 1) {
@@ -734,7 +786,7 @@ function syncCreateResultsByTotal() {
 
     const next = [];
     for (let i = 0; i < Math.min(qty, 36); i++) {
-        next.push(createResults[i] || { player_id: "", deck_id: "" });
+        next.push(createResults[i] || { player_id: '', deck_id: '' });
     }
     createResults = next;
     renderCreateResultsRows();
@@ -742,18 +794,20 @@ function syncCreateResultsByTotal() {
 
 async function loadStoresToCreate() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*&order=name.asc`, { headers });
-        if (!res.ok) throw new Error("Erro ao carregar lojas");
-        
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*&order=name.asc`, {
+            headers
+        });
+        if (!res.ok) throw new Error('Erro ao carregar lojas');
+
         const stores = await res.json();
-        const select = document.getElementById("createStoreSelect");
+        const select = document.getElementById('createStoreSelect');
         select.innerHTML = '<option value="">Selecione a loja...</option>';
-        stores.forEach(s => {
+        stores.forEach((s) => {
             select.innerHTML += `<option value="${s.id}">${s.name}</option>`;
         });
     } catch (err) {
-        console.error("Erro ao carregar lojas:", err);
-        alert("Falha ao carregar lojas: " + err.message);
+        console.error('Erro ao carregar lojas:', err);
+        alert('Falha ao carregar lojas: ' + err.message);
     }
 }
 
@@ -772,7 +826,7 @@ async function toggleTournamentDetails(tournament) {
 
 function getDetailsContainer(tournamentId) {
     const targetId = String(tournamentId);
-    const containers = document.querySelectorAll(".tournament-inline-details-content");
+    const containers = document.querySelectorAll('.tournament-inline-details-content');
     for (const el of containers) {
         if (String(el.dataset.detailsContentFor) === targetId) return el;
     }
@@ -780,42 +834,54 @@ function getDetailsContainer(tournamentId) {
 }
 
 function clearTournamentDetails() {
-    const containers = document.querySelectorAll(".tournament-inline-details-content");
+    const containers = document.querySelectorAll('.tournament-inline-details-content');
     containers.forEach((el) => {
-        el.innerHTML = "";
+        el.innerHTML = '';
     });
 }
 
 function buildPieSlicePolygon(startDeg, endDeg, steps = 24) {
-    const points = ["50% 50%"];
+    const points = ['50% 50%'];
     for (let i = 0; i <= steps; i++) {
-        const angle = startDeg + ((endDeg - startDeg) * i / steps);
-        const rad = angle * Math.PI / 180;
-        const x = 50 + (50 * Math.cos(rad));
-        const y = 50 + (50 * Math.sin(rad));
+        const angle = startDeg + ((endDeg - startDeg) * i) / steps;
+        const rad = (angle * Math.PI) / 180;
+        const x = 50 + 50 * Math.cos(rad);
+        const y = 50 + 50 * Math.sin(rad);
         points.push(`${x.toFixed(2)}% ${y.toFixed(2)}%`);
     }
-    return `polygon(${points.join(",")})`;
+    return `polygon(${points.join(',')})`;
 }
 
 function buildDeckPieData(results) {
     const grouped = new Map();
     (results || []).forEach((item) => {
-        const key = item.deck || "Unknown Deck";
+        const key = item.deck || 'Unknown Deck';
         if (!grouped.has(key)) {
             grouped.set(key, {
                 deck: key,
-                image_url: item.image_url || "",
+                image_url: item.image_url || '',
                 count: 0
             });
         }
         grouped.get(key).count += 1;
-        if (!grouped.get(key).image_url && item.image_url) grouped.get(key).image_url = item.image_url;
+        if (!grouped.get(key).image_url && item.image_url)
+            grouped.get(key).image_url = item.image_url;
     });
 
     const entries = Array.from(grouped.values()).sort((a, b) => b.count - a.count);
     const total = entries.reduce((acc, item) => acc + item.count, 0) || 1;
-    const colors = ["#ffd700", "#c0c0c0", "#cd7f32", "#268d7c", "#667eea", "#764ba2", "#2a9d8f", "#e76f51", "#8ab17d", "#3d5a80"];
+    const colors = [
+        '#ffd700',
+        '#c0c0c0',
+        '#cd7f32',
+        '#268d7c',
+        '#667eea',
+        '#764ba2',
+        '#2a9d8f',
+        '#e76f51',
+        '#8ab17d',
+        '#3d5a80'
+    ];
 
     let currentAngle = -90;
     return entries.map((entry, index) => {
@@ -824,18 +890,18 @@ function buildDeckPieData(results) {
         const end = currentAngle + sliceAngle;
         currentAngle = end;
         const midDeg = (start + end) / 2;
-        const midRad = midDeg * Math.PI / 180;
+        const midRad = (midDeg * Math.PI) / 180;
 
-        const fallback = `https://via.placeholder.com/300x300/667eea/ffffff?text=${encodeURIComponent((entry.deck || "Deck").substring(0, 10))}`;
+        const fallback = `https://via.placeholder.com/300x300/667eea/ffffff?text=${encodeURIComponent((entry.deck || 'Deck').substring(0, 10))}`;
         const percent = (entry.count / total) * 100;
         // Tuned for better perceived centering inside each slice.
-        const initialZoom = Math.max(155, Math.min(320, 155 + (percent * 3.2)));
+        const initialZoom = Math.max(155, Math.min(320, 155 + percent * 3.2));
         const minZoom = Math.max(120, initialZoom - 55);
         const maxZoom = Math.min(420, initialZoom + 130);
 
         // Shift image opposite to slice direction so content appears centered in the wedge.
-        const initialX = Math.max(34, Math.min(66, 50 - (Math.cos(midRad) * 12)));
-        const initialY = Math.max(4, Math.min(24, 13 - (Math.sin(midRad) * 4)));
+        const initialX = Math.max(34, Math.min(66, 50 - Math.cos(midRad) * 12));
+        const initialY = Math.max(4, Math.min(24, 13 - Math.sin(midRad) * 4));
         return {
             deck: entry.deck,
             count: entry.count,
@@ -867,16 +933,16 @@ function loadPieState(tournamentId) {
 
 function savePieState(tournamentId, rootElement) {
     if (!tournamentId || !rootElement) return;
-    const slices = rootElement.querySelectorAll(".details-pie-slice");
+    const slices = rootElement.querySelectorAll('.details-pie-slice');
     const state = {};
 
     slices.forEach((slice) => {
-        const deck = slice.dataset.deck || "";
+        const deck = slice.dataset.deck || '';
         if (!deck) return;
         state[deck] = {
-            x: parseFloat(slice.dataset.x || "50"),
-            y: parseFloat(slice.dataset.y || "13"),
-            zoom: parseFloat(slice.dataset.zoom || "195")
+            x: parseFloat(slice.dataset.x || '50'),
+            y: parseFloat(slice.dataset.y || '13'),
+            zoom: parseFloat(slice.dataset.zoom || '195')
         };
     });
 
@@ -887,17 +953,17 @@ function savePieState(tournamentId, rootElement) {
 
 function setupInteractivePieSlices(rootElement, tournamentId) {
     if (!rootElement) return;
-    const slices = rootElement.querySelectorAll(".details-pie-slice");
+    const slices = rootElement.querySelectorAll('.details-pie-slice');
     const savedState = loadPieState(tournamentId);
     let topZ = 10;
 
     slices.forEach((slice) => {
-        const deck = slice.dataset.deck || "";
+        const deck = slice.dataset.deck || '';
         const saved = deck ? savedState[deck] : null;
 
-        slice.dataset.x = String(saved?.x ?? slice.dataset.x ?? "50");
-        slice.dataset.y = String(saved?.y ?? slice.dataset.y ?? "13");
-        slice.dataset.zoom = String(saved?.zoom ?? slice.dataset.zoom ?? "195");
+        slice.dataset.x = String(saved?.x ?? slice.dataset.x ?? '50');
+        slice.dataset.y = String(saved?.y ?? slice.dataset.y ?? '13');
+        slice.dataset.zoom = String(saved?.zoom ?? slice.dataset.zoom ?? '195');
         slice.style.backgroundPosition = `${slice.dataset.x}% ${slice.dataset.y}%`;
         slice.style.backgroundSize = `${slice.dataset.zoom}%`;
 
@@ -909,8 +975,8 @@ function setupInteractivePieSlices(rootElement, tournamentId) {
             let lastY = e.clientY;
 
             const onMove = (ev) => {
-                let posX = parseFloat(slice.dataset.x || "50");
-                let posY = parseFloat(slice.dataset.y || "50");
+                let posX = parseFloat(slice.dataset.x || '50');
+                let posY = parseFloat(slice.dataset.y || '50');
                 const dx = ev.clientX - lastX;
                 const dy = ev.clientY - lastY;
                 lastX = ev.clientX;
@@ -925,23 +991,25 @@ function setupInteractivePieSlices(rootElement, tournamentId) {
             };
 
             const onUp = (ev) => {
-                try { slice.releasePointerCapture(ev.pointerId); } catch (_) {}
-                slice.removeEventListener("pointermove", onMove);
-                slice.removeEventListener("pointerup", onUp);
-                slice.removeEventListener("pointercancel", onUp);
+                try {
+                    slice.releasePointerCapture(ev.pointerId);
+                } catch (_) {}
+                slice.removeEventListener('pointermove', onMove);
+                slice.removeEventListener('pointerup', onUp);
+                slice.removeEventListener('pointercancel', onUp);
                 savePieState(tournamentId, rootElement);
             };
 
-            slice.addEventListener("pointermove", onMove);
-            slice.addEventListener("pointerup", onUp);
-            slice.addEventListener("pointercancel", onUp);
+            slice.addEventListener('pointermove', onMove);
+            slice.addEventListener('pointerup', onUp);
+            slice.addEventListener('pointercancel', onUp);
         };
 
         slice.onwheel = (e) => {
             e.preventDefault();
-            let currentZoom = parseFloat(slice.dataset.zoom || "220");
-            const minZoom = parseFloat(slice.dataset.minZoom || "120");
-            const maxZoom = parseFloat(slice.dataset.maxZoom || "420");
+            let currentZoom = parseFloat(slice.dataset.zoom || '220');
+            const minZoom = parseFloat(slice.dataset.minZoom || '120');
+            const maxZoom = parseFloat(slice.dataset.maxZoom || '420');
             currentZoom += e.deltaY < 0 ? 8 : -8;
             if (currentZoom < minZoom) currentZoom = minZoom;
             if (currentZoom > maxZoom) currentZoom = maxZoom;
@@ -969,74 +1037,90 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
         }
 
         const results = await res.json();
-        const topFour = (results || []).filter(r => Number(r.placement) <= 4);
+        const topFour = (results || []).filter((r) => Number(r.placement) <= 4);
         const totalPlayers = Number.isFinite(Number(tournament.total_players))
             ? Number(tournament.total_players)
-            : (results[0]?.total_players || 0);
+            : results[0]?.total_players || 0;
         const header = `
             <div class="tournament-details-header">
-                <strong>${tournament.tournament_name || "Tournament"}</strong> - ${formatDate(tournament.tournament_date)} - ${tournament.store?.name || "Store"}
+                <strong>${tournament.tournament_name || 'Tournament'}</strong> - ${formatDate(tournament.tournament_date)} - ${tournament.store?.name || 'Store'}
                 <div>Total Players: ${totalPlayers}</div>
             </div>
         `;
 
         const placementClass = (placement) => {
-            if (placement === 1) return "first-place";
-            if (placement === 2) return "second-place";
-            if (placement === 3) return "third-place";
-            if (placement === 4) return "fourth-place";
-            return "";
+            if (placement === 1) return 'first-place';
+            if (placement === 2) return 'second-place';
+            if (placement === 3) return 'third-place';
+            if (placement === 4) return 'fourth-place';
+            return '';
         };
 
         const podiumHtml = topFour.length
-            ? topFour.map(item => {
-                const imageUrl = item.image_url || `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent((item.deck || "Deck").substring(0, 10))}`;
-                return `
+            ? topFour
+                  .map((item) => {
+                      const imageUrl =
+                          item.image_url ||
+                          `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent((item.deck || 'Deck').substring(0, 10))}`;
+                      return `
                 <div class="details-podium-card ${placementClass(Number(item.placement))}">
-                    <div class="details-rank-badge">${item.placement}º</div>
+                    <div class="details-rank-badge">${item.placement}Âº</div>
                     <div class="details-deck-card-footer">
-                        <div class="details-player-name">${item.player || "-"}</div>
-                        <div class="details-deck-name">${item.deck || "-"}</div>
+                        <div class="details-player-name">${item.player || '-'}</div>
+                        <div class="details-deck-name">${item.deck || '-'}</div>
                     </div>
                     <div class="details-card-image-wrapper">
-                        <img src="${imageUrl}" alt="${item.deck || "Deck"}" class="details-deck-card-image">
+                        <img src="${imageUrl}" alt="${item.deck || 'Deck'}" class="details-deck-card-image">
                     </div>
                 </div>
             `;
-            }).join("")
+                  })
+                  .join('')
             : `<div class="results-mini-item"><div class="results-mini-main">No podium data found.</div></div>`;
 
         const pieSlices = buildDeckPieData(results);
         const pieHtml = pieSlices.length
-            ? pieSlices.map(slice => `
+            ? pieSlices
+                  .map(
+                      (slice) => `
                 <div class="details-pie-slice"
                      style="clip-path:${slice.clipPath}; background-image:url('${slice.image_url}');"
-                     data-deck="${String(slice.deck || "").replace(/"/g, "&quot;")}"
+                     data-deck="${String(slice.deck || '').replace(/"/g, '&quot;')}"
                      data-x="${slice.initialX}" data-y="${slice.initialY}"
                      data-zoom="${slice.initialZoom}" data-min-zoom="${slice.minZoom}" data-max-zoom="${slice.maxZoom}"
                      title="${slice.deck} (${slice.percent.toFixed(1)}%)"></div>
-            `).join("")
-            : "";
+            `
+                  )
+                  .join('')
+            : '';
         const pieLegend = pieSlices.length
-            ? pieSlices.map(slice => `
+            ? pieSlices
+                  .map(
+                      (slice) => `
                 <div class="details-pie-legend-item">
                     <span class="details-pie-legend-color" style="background:${slice.color}"></span>
                     <span class="details-pie-legend-name" title="${slice.deck}">${slice.deck}</span>
                     <strong>${slice.count}</strong>
                 </div>
-            `).join("")
+            `
+                  )
+                  .join('')
             : `<div class="details-pie-legend-item">No deck data</div>`;
 
         const resultsHtml = (results || []).length
-            ? results.map(item => `
+            ? results
+                  .map(
+                      (item) => `
                 <div class="results-mini-item">
-                    <div class="results-mini-rank">${item.placement}º</div>
+                    <div class="results-mini-rank">${item.placement}Âº</div>
                     <div class="results-mini-main">
-                        <strong>${item.deck || "-"}</strong>
-                        <span>${item.player || "-"}</span>
+                        <strong>${item.deck || '-'}</strong>
+                        <span>${item.player || '-'}</span>
                     </div>
                 </div>
-            `).join("")
+            `
+                  )
+                  .join('')
             : `<div class="results-mini-item"><div class="results-mini-main">No results found.</div></div>`;
 
         if (!targetContainer) {
@@ -1065,7 +1149,10 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
                 </div>
             </div>
         `;
-        setupInteractivePieSlices(content, tournament.id || `${tournament.store_id}-${tournament.tournament_date}`);
+        setupInteractivePieSlices(
+            content,
+            tournament.id || `${tournament.store_id}-${tournament.tournament_date}`
+        );
     } catch (err) {
         console.error(err);
         if (!targetContainer) {
@@ -1078,24 +1165,28 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
 }
 
 async function loadPlayersToCreate() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/players?select=id,name&order=name.asc`, { headers });
-    if (!res.ok) throw new Error("Erro ao carregar players");
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/players?select=id,name&order=name.asc`, {
+        headers
+    });
+    if (!res.ok) throw new Error('Erro ao carregar players');
     createPlayers = await res.json();
 }
 
 async function loadDecksToCreate() {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=id,name&order=name.asc`, { headers });
-    if (!res.ok) throw new Error("Erro ao carregar decks");
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=id,name&order=name.asc`, {
+        headers
+    });
+    if (!res.ok) throw new Error('Erro ao carregar decks');
     createDecks = await res.json();
 }
 
 function addCreateResultRow() {
     if (createResults.length >= 36) {
-        alert("O limite maximo e 36 jogadores neste modal.");
+        alert('O limite maximo e 36 jogadores neste modal.');
         return;
     }
 
-    createResults.push({ player_id: "", deck_id: "" });
+    createResults.push({ player_id: '', deck_id: '' });
     renderCreateResultsRows();
 }
 
@@ -1111,24 +1202,26 @@ function updateCreateResultField(index, field, value) {
 
 function buildOptions(items, selectedValue, placeholder) {
     const initial = `<option value="">${placeholder}</option>`;
-    const options = items.map(item => {
-        const selected = String(item.id) === String(selectedValue) ? "selected" : "";
+    const options = items.map((item) => {
+        const selected = String(item.id) === String(selectedValue) ? 'selected' : '';
         return `<option value="${item.id}" ${selected}>${item.name}</option>`;
     });
-    return initial + options.join("");
+    return initial + options.join('');
 }
 
 function renderCreateResultsRows() {
-    const container = document.getElementById("createResultsRows");
+    const container = document.getElementById('createResultsRows');
     if (!container) return;
 
     if (createResults.length === 0) {
-        container.innerHTML = "";
-        document.getElementById("createTotalPlayers").value = "";
+        container.innerHTML = '';
+        document.getElementById('createTotalPlayers').value = '';
         return;
     }
 
-    container.innerHTML = createResults.map((row, index) => `
+    container.innerHTML = createResults
+        .map(
+            (row, index) => `
         <div class="result-row">
             <div class="form-group">
                 <label>Placement</label>
@@ -1137,20 +1230,29 @@ function renderCreateResultsRows() {
             <div class="form-group">
                 <label>Player<span class="required">*</span></label>
                 <select onchange="updateCreateResultField(${index}, 'player_id', this.value)" required>
-                    ${buildOptions(createPlayers, row.player_id, "Selecione o player...")}
+                    ${buildOptions(createPlayers, row.player_id, 'Selecione o player...')}
                 </select>
             </div>
             <div class="form-group">
                 <label>Deck<span class="required">*</span></label>
                 <select onchange="updateCreateResultField(${index}, 'deck_id', this.value)" required>
-                    ${buildOptions(createDecks, row.deck_id, "Selecione o deck...")}
+                    ${buildOptions(createDecks, row.deck_id, 'Selecione o deck...')}
                 </select>
             </div>
-            <button type="button" class="btn-remove-result" onclick="removeCreateResultRow(${index})">Remove</button>
+            <button type="button" class="btn-remove-result" data-create-remove-index="${index}">Remove</button>
         </div>
-    `).join("");
+    `
+        )
+        .join('');
 
-    document.getElementById("createTotalPlayers").value = String(createResults.length);
+    container.querySelectorAll('[data-create-remove-index]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const index = Number(button.getAttribute('data-create-remove-index'));
+            removeCreateResultRow(index);
+        });
+    });
+
+    document.getElementById('createTotalPlayers').value = String(createResults.length);
 }
 
 async function createTournamentFormSubmit(e) {
@@ -1158,44 +1260,57 @@ async function createTournamentFormSubmit(e) {
     const submitBtn = document.querySelector("#createTournamentForm button[type='submit']");
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
-    submitBtn.textContent = "Criando...";
+    submitBtn.textContent = 'Criando...';
 
     try {
         const totalPlayers = createResults.length;
         const payload = {
-            store_id: document.getElementById("createStoreSelect").value,
-            tournament_date: document.getElementById("createTournamentDate").value,
-            tournament_name: document.getElementById("createTournamentName").value,
+            store_id: document.getElementById('createStoreSelect').value,
+            tournament_date: document.getElementById('createTournamentDate').value,
+            tournament_name: document.getElementById('createTournamentName').value,
             total_players: totalPlayers,
-            instagram_link: document.getElementById("createInstagramLink").value.trim(),
+            instagram_link: document.getElementById('createInstagramLink').value.trim()
         };
 
-        const hasInvalidResult = createResults.some(r => !r.player_id || !r.deck_id);
-        if (!payload.store_id || !payload.tournament_date || !payload.tournament_name || payload.total_players < 1 || hasInvalidResult) {
-            alert("Por favor preencha todos os campos obrigatorios");
+        const validTotalPlayers = window.validation
+            ? window.validation.isPositiveInteger(payload.total_players, 1, 36)
+            : payload.total_players > 0;
+        const validInstagram = window.validation
+            ? window.validation.isValidOptionalUrl(payload.instagram_link)
+            : true;
+        const hasInvalidResult = createResults.some((r) => !r.player_id || !r.deck_id);
+        if (
+            !payload.store_id ||
+            !payload.tournament_date ||
+            !payload.tournament_name ||
+            !validTotalPlayers ||
+            !validInstagram ||
+            hasInvalidResult
+        ) {
+            alert('Please fill all required fields correctly.');
             return;
         }
-        
-        console.log("Criando torneio:", payload);
-        
+
+        console.log('Criando torneio:', payload);
+
         const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament`, {
-            method: "POST",
+            method: 'POST',
             headers: {
                 ...headers,
-                "Prefer": "return=representation"
+                Prefer: 'return=representation'
             },
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) {
             const errorText = await res.text();
-            console.error("Erro ao criar:", res.status, errorText);
+            console.error('Erro ao criar:', res.status, errorText);
             throw new Error(`Erro ao cadastrar torneio (${res.status})`);
         }
 
         const createdTournament = (await res.json())[0];
         if (!createdTournament?.id) {
-            throw new Error("Torneio criado sem retornar ID");
+            throw new Error('Torneio criado sem retornar ID');
         }
 
         const resultsPayload = createResults.map((row, index) => ({
@@ -1209,14 +1324,14 @@ async function createTournamentFormSubmit(e) {
         }));
 
         const resultsRes = await fetch(`${SUPABASE_URL}/rest/v1/tournament_results`, {
-            method: "POST",
+            method: 'POST',
             headers,
             body: JSON.stringify(resultsPayload)
         });
 
         if (!resultsRes.ok) {
             const resultsError = await resultsRes.text();
-            console.error("Erro ao criar results:", resultsRes.status, resultsError);
+            console.error('Erro ao criar results:', resultsRes.status, resultsError);
             if (resultsRes.status === 409) {
                 const existingRes = await fetch(
                     `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${encodeURIComponent(payload.store_id)}&tournament_date=eq.${payload.tournament_date}&select=id,placement,tournament_id&order=placement.asc`,
@@ -1224,32 +1339,45 @@ async function createTournamentFormSubmit(e) {
                 );
 
                 if (!existingRes.ok) {
-                    await fetch(`${SUPABASE_URL}/rest/v1/tournament?id=eq.${encodeURIComponent(createdTournament.id)}`, {
-                        method: "DELETE",
-                        headers
-                    });
-                    throw new Error(`Erro ao correlacionar tournament_results existentes (${existingRes.status})`);
+                    await fetch(
+                        `${SUPABASE_URL}/rest/v1/tournament?id=eq.${encodeURIComponent(createdTournament.id)}`,
+                        {
+                            method: 'DELETE',
+                            headers
+                        }
+                    );
+                    throw new Error(
+                        `Erro ao correlacionar tournament_results existentes (${existingRes.status})`
+                    );
                 }
 
                 const existingRows = await existingRes.json();
                 for (const row of existingRows) {
                     if (!row?.id || row.tournament_id) continue;
 
-                    const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/tournament_results?id=eq.${encodeURIComponent(row.id)}`, {
-                        method: "PATCH",
-                        headers,
-                        body: JSON.stringify({ tournament_id: createdTournament.id })
-                    });
+                    const patchRes = await fetch(
+                        `${SUPABASE_URL}/rest/v1/tournament_results?id=eq.${encodeURIComponent(row.id)}`,
+                        {
+                            method: 'PATCH',
+                            headers,
+                            body: JSON.stringify({ tournament_id: createdTournament.id })
+                        }
+                    );
 
                     if (!patchRes.ok) {
-                        throw new Error(`Falha ao correlacionar tournament_result ${row.id} (${patchRes.status})`);
+                        throw new Error(
+                            `Falha ao correlacionar tournament_result ${row.id} (${patchRes.status})`
+                        );
                     }
                 }
             } else {
-                await fetch(`${SUPABASE_URL}/rest/v1/tournament?id=eq.${encodeURIComponent(createdTournament.id)}`, {
-                    method: "DELETE",
-                    headers
-                });
+                await fetch(
+                    `${SUPABASE_URL}/rest/v1/tournament?id=eq.${encodeURIComponent(createdTournament.id)}`,
+                    {
+                        method: 'DELETE',
+                        headers
+                    }
+                );
                 throw new Error(`Erro ao cadastrar tournament_results (${resultsRes.status})`);
             }
         }
@@ -1257,22 +1385,14 @@ async function createTournamentFormSubmit(e) {
         await loadTournaments();
         applyFilters();
         closeCreateModal();
-        
-        // Limpa o formulÃƒÂ¡rio
-        document.getElementById("createTournamentForm").reset();
-        
+
+        // Reset form
+        document.getElementById('createTournamentForm').reset();
     } catch (err) {
-        console.error("Erro completo:", err);
-        alert("Falha ao cadastrar torneio: " + err.message);
+        console.error('Erro completo:', err);
+        alert('Falha ao cadastrar torneio: ' + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     }
 }
-
-
-
-
-
-
-

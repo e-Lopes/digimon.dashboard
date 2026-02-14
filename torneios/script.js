@@ -1,15 +1,16 @@
-/**
- * SISTEMA DE RELATÓRIO DE TORNEIOS - VERSÃO FINAL (FIX LAYOUT & DATA LOSS)
+﻿/**
+ * Tournament reporting system
  */
 
-const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
-
-const headers = {
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-    "Content-Type": "application/json"
-};
+const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || 'https://vllqakohumoinpdwnsqa.supabase.co';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || '';
+const headers = window.createSupabaseHeaders
+    ? window.createSupabaseHeaders()
+    : {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+      };
 
 let allDecks = [];
 let allPlayers = [];
@@ -28,54 +29,74 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadStores() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*&order=name.asc`, { headers });
+        const res = window.supabaseApi
+            ? await window.supabaseApi.get('/rest/v1/stores?select=*&order=name.asc')
+            : await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*&order=name.asc`, { headers });
         const stores = await res.json();
-        const select = document.getElementById("storeSelect");
+        const select = document.getElementById('storeSelect');
         if (select) {
             select.innerHTML = '<option value="">Selecione a loja...</option>';
-            stores.forEach(s => { select.innerHTML += `<option value="${s.id}">${s.name}</option>`; });
+            stores.forEach((s) => {
+                select.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
         }
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function loadDecks() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/decks?select=*&order=name.asc`, { headers });
+        const res = window.supabaseApi
+            ? await window.supabaseApi.get('/rest/v1/decks?select=*&order=name.asc')
+            : await fetch(`${SUPABASE_URL}/rest/v1/decks?select=*&order=name.asc`, { headers });
         allDecks = await res.json();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
 async function loadPlayers() {
     try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/players?select=*&order=name.asc`, { headers });
+        const res = window.supabaseApi
+            ? await window.supabaseApi.get('/rest/v1/players?select=*&order=name.asc')
+            : await fetch(`${SUPABASE_URL}/rest/v1/players?select=*&order=name.asc`, { headers });
         allPlayers = await res.json();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+        console.error(err);
+    }
 }
 
-// --- LÓGICA DE EDIÇÃO ---
+// --- EDIT MODE LOGIC ---
 
 function setupTournamentCheck() {
     const storeSelect = document.getElementById('storeSelect');
     const dateInput = document.getElementById('tournamentDate');
-    
+
     const check = async () => {
         const storeId = storeSelect.value;
         const date = dateInput.value;
         if (!storeId || !date) return;
 
         try {
-            const res = await fetch(
-                `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${storeId}&tournament_date=eq.${date}&order=placement.asc`,
-                { headers }
-            );
+            const res = window.supabaseApi
+                ? await window.supabaseApi.get(
+                      `/rest/v1/tournament_results?store_id=eq.${storeId}&tournament_date=eq.${date}&order=placement.asc`
+                  )
+                : await fetch(
+                      `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${storeId}&tournament_date=eq.${date}&order=placement.asc`,
+                      { headers }
+                  );
             const results = await res.json();
-            
+
             if (results && results.length > 0) {
                 loadExistingTournament(results);
             } else {
                 clearEditMode();
             }
-        } catch (err) { console.error(err); }
+        } catch (err) {
+            console.error(err);
+        }
     };
 
     storeSelect?.addEventListener('change', check);
@@ -90,7 +111,7 @@ function loadExistingTournament(results) {
 
     // 1. Limpa o container totalmente para evitar o bug visual da imagem
     const container = document.getElementById('placementsContainer');
-    container.innerHTML = ''; 
+    container.innerHTML = '';
 
     // 2. Sincroniza o estado dos inputs
     const totalInput = document.getElementById('totalPlayers');
@@ -106,24 +127,24 @@ function loadExistingTournament(results) {
 
     results.forEach((result, index) => {
         if (deckInputs[index]) {
-            const deck = allDecks.find(d => d.id === result.deck_id);
-            if (deck) { 
-                deckInputs[index].value = deck.name; 
-                deckInputs[index].dataset.deckId = deck.id; 
+            const deck = allDecks.find((d) => d.id === result.deck_id);
+            if (deck) {
+                deckInputs[index].value = deck.name;
+                deckInputs[index].dataset.deckId = deck.id;
             }
         }
         if (playerInputs[index]) {
-            const player = allPlayers.find(p => p.id === result.player_id);
-            if (player) { 
-                playerInputs[index].value = player.name; 
-                playerInputs[index].dataset.playerId = player.id; 
+            const player = allPlayers.find((p) => p.id === result.player_id);
+            if (player) {
+                playerInputs[index].value = player.name;
+                playerInputs[index].dataset.playerId = player.id;
             }
         }
     });
     updateSubmitButton();
 }
 
-// --- SINCRONIZAÇÃO DE LINHAS ---
+// --- ROW SYNC ---
 
 function setupDynamicRows() {
     const totalInput = document.getElementById('totalPlayers');
@@ -138,8 +159,11 @@ function syncRows(qty) {
     const container = document.getElementById('placementsContainer');
     const limit = Math.min(qty, 16);
 
-    // Se houver qualquer coisa que NÃO seja uma linha de colocação (como o texto inicial), limpa.
-    if (container.children.length > 0 && !container.firstElementChild.classList.contains('placement-row')) {
+    // If there is any non-row content (like placeholder text), clear it.
+    if (
+        container.children.length > 0 &&
+        !container.firstElementChild.classList.contains('placement-row')
+    ) {
         container.innerHTML = '';
     }
 
@@ -155,15 +179,14 @@ function syncRows(qty) {
                 <span class="rank-number">${i}</span>
                 <div class="autocomplete-wrapper">
                     <input type="text" class="deck-input" data-rank="${i}" placeholder="Deck..." autocomplete="off" required>
-                    <input type="text" class="player-input" data-rank="${i}" placeholder="Jogador..." autocomplete="off" ${i <= 4 ? "required" : ""}>
+                    <input type="text" class="player-input" data-rank="${i}" placeholder="Jogador..." autocomplete="off" ${i <= 4 ? 'required' : ''}>
                     <div class="autocomplete-dropdown"></div>
                 </div>
             `;
             container.appendChild(row);
         }
-        setupAutocomplete(); 
-    } 
-    else if (limit < currentCount) {
+        setupAutocomplete();
+    } else if (limit < currentCount) {
         // Remove apenas as do final, mantendo os dados das primeiras
         for (let i = currentCount; i > limit; i--) {
             container.lastElementChild.remove();
@@ -171,14 +194,21 @@ function syncRows(qty) {
     }
 }
 
-// --- SUBMISSÃO ---
+// --- SUBMIT ---
 
 document.getElementById('reportForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const store_id = document.getElementById('storeSelect').value;
     const date = document.getElementById('tournamentDate').value;
-    const total_players = parseInt(document.getElementById('totalPlayers').value);
-    
+    const total_players = parseInt(document.getElementById('totalPlayers').value, 10);
+    const validTotalPlayers = window.validation
+        ? window.validation.isPositiveInteger(total_players, 1, 99)
+        : Number.isInteger(total_players) && total_players > 0;
+    if (!validTotalPlayers) {
+        alert('Invalid total players.');
+        return;
+    }
+
     const deckInputs = document.querySelectorAll('.deck-input');
     const playerInputs = document.querySelectorAll('.player-input');
     const payload = [];
@@ -186,35 +216,58 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
     for (let i = 0; i < deckInputs.length; i++) {
         const deckId = deckInputs[i].dataset.deckId;
         const playerId = playerInputs[i].dataset.playerId || null;
-        if (!deckId) { alert(`❌ Defina o Deck para a ${i+1}ª colocação.`); return; }
+        if (!deckId) {
+            alert(`Select a deck for placement ${i + 1}.`);
+            return;
+        }
         payload.push({
-            store_id, tournament_date: date, total_players,
-            placement: i + 1, deck_id: deckId, player_id: playerId
+            store_id,
+            tournament_date: date,
+            total_players,
+            placement: i + 1,
+            deck_id: deckId,
+            player_id: playerId
         });
     }
 
     try {
         showLoading(true);
-        // Se for edição, limpa o banco antes de salvar o novo estado (estratégia Clean & Save)
+        // In edit mode, clear existing rows before saving the new state.
         if (isEditMode) {
-            await fetch(`${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${store_id}&tournament_date=eq.${date}`, 
-            { method: 'DELETE', headers });
+            if (window.supabaseApi) {
+                await window.supabaseApi.del(
+                    `/rest/v1/tournament_results?store_id=eq.${store_id}&tournament_date=eq.${date}`
+                );
+            } else {
+                await fetch(
+                    `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${store_id}&tournament_date=eq.${date}`,
+                    { method: 'DELETE', headers }
+                );
+            }
         }
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tournament_results`, {
-            method: 'POST',
-            headers: { ...headers, "Prefer": "return=minimal" },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("Erro ao salvar.");
-        window.location.href = "../index.html";
-    } catch (err) { alert(err.message); } finally { showLoading(false); }
+        const res = window.supabaseApi
+            ? await window.supabaseApi.post('/rest/v1/tournament_results', payload, {
+                  Prefer: 'return=minimal'
+              })
+            : await fetch(`${SUPABASE_URL}/rest/v1/tournament_results`, {
+                  method: 'POST',
+                  headers: { ...headers, Prefer: 'return=minimal' },
+                  body: JSON.stringify(payload)
+              });
+        if (!res.ok) throw new Error('Erro ao salvar.');
+        window.location.href = '../index.html';
+    } catch (err) {
+        alert(err.message);
+    } finally {
+        showLoading(false);
+    }
 });
 
 // --- AUTOCOMPLETE ---
 
 function setupAutocomplete() {
     const wrappers = document.querySelectorAll('.autocomplete-wrapper');
-    wrappers.forEach(wrapper => {
+    wrappers.forEach((wrapper) => {
         const deckInput = wrapper.querySelector('.deck-input');
         const playerInput = wrapper.querySelector('.player-input');
         const dropdown = wrapper.querySelector('.autocomplete-dropdown');
@@ -222,17 +275,31 @@ function setupAutocomplete() {
         const attach = (input, source, type) => {
             input.addEventListener('input', () => {
                 const val = input.value.toLowerCase().trim();
-                if (!val) { dropdown.style.display = 'none'; delete input.dataset[`${type}Id`]; return; }
-                const matches = source.filter(s => s.name.toLowerCase().includes(val)).slice(0, 5);
+                if (!val) {
+                    dropdown.style.display = 'none';
+                    delete input.dataset[`${type}Id`];
+                    return;
+                }
+                const matches = source
+                    .filter((s) => s.name.toLowerCase().includes(val))
+                    .slice(0, 5);
                 if (matches.length > 0) {
-                    dropdown.innerHTML = matches.map(m => `<div class="autocomplete-item" data-id="${m.id}" data-name="${m.name}" data-target-type="${type}">${m.name}</div>`).join('');
+                    dropdown.innerHTML = matches
+                        .map(
+                            (m) =>
+                                `<div class="autocomplete-item" data-id="${m.id}" data-name="${m.name}" data-target-type="${type}">${m.name}</div>`
+                        )
+                        .join('');
                     dropdown.style.display = 'block';
                 } else {
-                    dropdown.innerHTML = '<div class="autocomplete-item no-match">Não encontrado</div>';
+                    dropdown.innerHTML =
+                        '<div class="autocomplete-item no-match">Nao encontrado</div>';
                     dropdown.style.display = 'block';
                 }
             });
-            input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+            input.addEventListener('blur', () =>
+                setTimeout(() => (dropdown.style.display = 'none'), 200)
+            );
         };
         attach(deckInput, allDecks, 'deck');
         attach(playerInput, allPlayers, 'player');
@@ -253,26 +320,28 @@ document.addEventListener('click', (e) => {
 
 // --- UI HELPERS ---
 
-function setTodayDate() { document.getElementById('tournamentDate').value = new Date().toISOString().split('T')[0]; }
+function setTodayDate() {
+    document.getElementById('tournamentDate').value = new Date().toISOString().split('T')[0];
+}
 
 function showEditBanner(store, date) {
     document.getElementById('editBanner')?.remove();
     const banner = document.createElement('div');
     banner.id = 'editBanner';
     banner.style.cssText = `background: #f39c12; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold;`;
-    banner.innerHTML = `✏️ MODO EDIÇÃO: ${store} (${date})`;
+    banner.textContent = `[EDIT MODE] ${store} (${date})`;
     document.getElementById('reportForm').prepend(banner);
 }
 
-function clearEditMode() { 
-    isEditMode = false; 
-    document.getElementById('editBanner')?.remove(); 
-    updateSubmitButton(); 
+function clearEditMode() {
+    isEditMode = false;
+    document.getElementById('editBanner')?.remove();
+    updateSubmitButton();
 }
 
 function updateSubmitButton() {
     const btn = document.getElementById('submitBtn');
-    if (btn) btn.textContent = isEditMode ? '💾 Update Tournament Results' : '💾 Save Tournament Results';
+    if (btn) btn.textContent = isEditMode ? 'Update Tournament Results' : 'Save Tournament Results';
 }
 
 function showLoading(show) {

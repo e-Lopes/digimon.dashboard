@@ -1,0 +1,22 @@
+/* Players page specific overrides */
+.search-container .search-input {
+    padding: 12px 18px !important;
+    margin-bottom: 0 !important;
+}
+
+.search-container .page-size-select,
+.search-container #pageSizeSelect {
+    position: static !important;
+    transform: none !important;
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 52px !important;
+    padding: 0 8px !important;
+    text-align: center;
+    text-align-last: center;
+    margin: 0 !important;
+}
+
+.search-container {
+    margin-bottom: 14px !important;
+}

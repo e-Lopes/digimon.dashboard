@@ -1,0 +1,21 @@
+.ui-state {
+    text-align: center;
+    border-radius: 12px;
+}
+
+.ui-state.is-empty {
+    color: #666;
+    padding: 48px 20px;
+}
+
+.ui-state.is-loading {
+    color: #666;
+    padding: 32px 20px;
+}
+
+.ui-state.is-error {
+    color: #c62828;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    padding: 16px;
+}

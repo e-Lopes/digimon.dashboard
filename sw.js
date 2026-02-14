@@ -1,58 +1,134 @@
-const CACHE_NAME = 'digistats-v5';
+﻿const CACHE_VERSION = 'v7';
+const CACHE_NAME = `digistats-${CACHE_VERSION}`;
 
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/script.js',
-  '/manifest.json'
+const APP_SHELL_ASSETS = [
+    './',
+    './index.html',
+    './offline.html',
+    './styles.css',
+    './styles/components/utilities.css',
+    './styles/components/states.css',
+    './manifest.json',
+    './config/app-version.js',
+    './config/supabase.js',
+    './config/api-client.js',
+    './config/ui-state.js',
+    './config/validation.js',
+    './config/register-sw.js',
+    './torneios/list-tournaments/calendar-view/calendar.js',
+    './torneios/list-tournaments/script.js',
+    './torneios/edit-tournament/modal.js',
+    './icons/icons-192.png',
+    './icons/icons-512.png',
+    './icons/favicon/favicon.png'
 ];
 
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
-  );
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    )
-  );
-  self.clients.claim();
-});
-
-self.addEventListener('fetch', event => {
-  const req = event.request;
-  const url = new URL(req.url);
-
-  // 🧠 HTML, CSS e JS = Network First
-  // Adicionamos verificação de CSS e JS para garantir que o estilo novo carregue logo
-  if (
-    req.headers.get('accept')?.includes('text/html') || 
-    url.pathname.endsWith('.css') || 
-    url.pathname.endsWith('.js')
-  ) {
-    event.respondWith(
-      fetch(req)
-        .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req)) // Se falhar a rede, usa o cache
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+    event.waitUntil(
+        caches
+            .open(CACHE_NAME)
+            .then((cache) =>
+                Promise.all(APP_SHELL_ASSETS.map((asset) => cache.add(asset).catch(() => null)))
+            )
     );
-    return;
-  }
-
-  // 🎨 Outros Assets (Imagens, Ícones) = Cache First
-  event.respondWith(
-    caches.match(req).then(res => res || fetch(req))
-  );
 });
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches
+            .keys()
+            .then((keys) =>
+                Promise.all(
+                    keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+                )
+            )
+    );
+    self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
+
+self.addEventListener('fetch', (event) => {
+    const request = event.request;
+
+    if (request.method !== 'GET') return;
+
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin) return;
+
+    const isNavigation = request.mode === 'navigate';
+    const isScriptOrStyle = request.destination === 'script' || request.destination === 'style';
+    const isStaticAsset =
+        request.destination === 'image' ||
+        request.destination === 'font' ||
+        request.destination === 'manifest';
+
+    if (isNavigation) {
+        event.respondWith(networkFirst(request, './offline.html'));
+        return;
+    }
+
+    if (isScriptOrStyle) {
+        event.respondWith(staleWhileRevalidate(request));
+        return;
+    }
+
+    if (isStaticAsset) {
+        event.respondWith(cacheFirst(request));
+        return;
+    }
+
+    event.respondWith(networkFirst(request));
+});
+
+async function networkFirst(request, fallbackAsset) {
+    const cache = await caches.open(CACHE_NAME);
+    try {
+        const response = await fetch(request);
+        if (response && response.ok) {
+            cache.put(request, response.clone());
+        }
+        return response;
+    } catch {
+        const cached = await cache.match(request);
+        if (cached) return cached;
+        if (fallbackAsset) {
+            const fallback = await cache.match(fallbackAsset);
+            if (fallback) return fallback;
+        }
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
+    }
+}
+
+async function cacheFirst(request) {
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    const response = await fetch(request);
+    if (response && response.ok) {
+        cache.put(request, response.clone());
+    }
+    return response;
+}
+
+async function staleWhileRevalidate(request) {
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request);
+
+    const networkFetch = fetch(request)
+        .then((response) => {
+            if (response && response.ok) {
+                cache.put(request, response.clone());
+            }
+            return response;
+        })
+        .catch(() => null);
+
+    return cached || networkFetch || new Response('', { status: 504 });
+}

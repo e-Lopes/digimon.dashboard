@@ -1,55 +1,133 @@
-![Logo do Projeto](icons/logo.png)
+# DigiStats Dashboard
 
-A responsive web dashboard for displaying Digimon TCG tournament results, powered by Supabase (https://supabase.com/).
+Dashboard web para gestão de torneios de Digimon TCG, com frontend em HTML/CSS/JS e backend via Supabase.
 
-## Database
+## Objetivo
 
-The project uses Supabase (PostgreSQL).
+Centralizar operações de:
 
-Main tables:
-- decks
-- deck_images
-- stores
-- tournament_results
+- cadastro e listagem de torneios
+- gestão de jogadores
+- gestão de decks
+- visualizações de pódio e calendário
 
-Analytics views:
-- v_deck_representation
-- v_meta_by_month
+## Stack
 
-The database schema is documented in /database/schema.sql
+- HTML, CSS e JavaScript (vanilla)
+- Supabase (REST API/Postgres)
+- Service Worker + Manifest (PWA)
+- Node.js (lint, testes e automações)
 
-// TODO supabase.from('v_deck_representation').select('*')
+## Estrutura do Projeto
 
+- `index.html`: dashboard principal
+- `script.js`: lógica principal da home
+- `styles.css`: estilos globais consolidados
+- `players/`: módulo de jogadores
+- `decks/`: módulo de decks
+- `torneios/`: fluxo principal de torneios (criar, listar, editar)
+- `tournaments/`: rotas alias em inglês
+- `config/`: configuração e utilitários compartilhados
+- `database/`: documentação e snapshots SQL
+- `tests/`: testes automatizados
+- `old-index/` e `legacy/`: legado e compatibilidade
 
-## 🌟 Features:
-✅ Real-time Database - Powered by Supabase PostgreSQL
+## Setup Local
 
-✅ Responsive Design - Mobile, tablet, and desktop friendly
+### 1. Pré-requisitos
 
-✅ Tournament Management - Create, view, and analyze tournament results
+- Node.js 20+ (recomendado)
+- npm
+- Docker Desktop (necessário para `db:snapshot`)
 
-✅ Deck Library - Manage Digimon decks with card images
+### 2. Instalar dependências
 
-✅ Interactive Podium - Visual top 3 display with deck images
+```bash
+npm install
+```
 
-✅ Live Filtering - Filter by store and tournament date
+### 3. Rodar checks de qualidade
 
-✅ Decklist Links - Direct links to external decklists
+```bash
+npm run lint
+npm run test
+```
 
-✅ Free Hosting - Deployable via GitHub Pages, Netlify, or Vercel
+## Comandos Disponíveis
 
-## 💻 Known Bugs & Future Improvements:
+- `npm run lint`: valida JavaScript com ESLint
+- `npm run test`: executa testes Node (`node --test`)
+- `npm run format`: formata arquivos com Prettier
+- `npm run db:snapshot`: exporta snapshot de schema/roles do Supabase
 
-[Feature]Add cadastro de loja
+## Rastreio de Banco (Supabase)
 
-[Feature]Add Label de Loja e dia em cima do podium
+Este projeto versiona estado de banco para auditoria e rollback.
 
-[UI] Criar uma visualização diferente dos decks para a quando estiver em mobile
+### Configuração
 
-[UI] Talvez deixar paginado a pagina de decks
+Defina a URL de conexão:
 
-[UI] Verificar posicionamento dos botoes de voltar pagina e voltar para o dashboard para ficar consistente e bem posicionado (botao de voltar ser em cima e não em baixo, por causa do mobile)
+```powershell
+$env:SUPABASE_DB_URL = "postgresql://postgres:<password>@<host>:5432/postgres"
+```
 
-[UI] Repensar a visualização dos deck no web para ficar sem o link da imagem no card e ser algo que ocupa menos espaço
+### Executar snapshot
 
-[UI+PossívelFeature] No cadastro de resultado de torneio, ao inves de ser uma seleção, fazer com que de para escrever o nome, e tenha uma sugestão de autocomplete baseado no nome que ja tem cadastrado, Se o deck que a pessoa digitou ainda não existe (tem que fazer um tratamento de upper/lower) tem que fazer um jeito dela escolher a arte do deck
+```bash
+npm run db:snapshot
+```
+
+Saídas esperadas:
+
+- `database/snapshots/schema-YYYYMMDD-HHMMSS.sql`
+- `database/snapshots/roles-YYYYMMDD-HHMMSS.sql`
+- `database/schema.latest.sql`
+- `database/roles.latest.sql`
+
+Mais detalhes: `database/README.md`
+
+## Fluxo de Trabalho no Git
+
+### Branching sugerido
+
+- `main`: estável
+- `feat/<tema>`: novas features
+- `fix/<tema>`: correções
+- `chore/<tema>`: manutenção técnica
+
+### Passos antes de commit
+
+1. Rodar `npm run lint`
+2. Rodar `npm run test`
+3. Se houver mudança de banco, rodar `npm run db:snapshot`
+4. Revisar `git diff`
+5. Commit com mensagem clara
+
+Exemplo de commit:
+
+```bash
+git commit -m "feat(players): improve pagination layout and cleanup styles comments"
+```
+
+## Padrões de Qualidade
+
+- Evitar lógica duplicada entre páginas
+- Reutilizar helpers de `config/`
+- Manter nomenclatura consistente
+- Evitar estilos inline em HTML
+- Priorizar correções com impacto em UX e dados
+
+## Documentação Complementar
+
+- `TODO.md`: backlog atual
+- `docs/structure-plan.md`: plano de organização
+- `docs/naming-and-language.md`: convenções de nomenclatura/idioma
+- `docs/security-rls.md`: segurança e RLS
+- `docs/legacy-deprecation.md`: plano de depreciação de legado
+
+## Observações de Segurança
+
+- Não commitar segredos (`.env`, connection strings, chaves privadas)
+- Rotacionar credenciais se forem expostas
+- Revisar permissões e políticas no Supabase (RLS)

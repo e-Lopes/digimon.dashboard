@@ -4,25 +4,37 @@
         <form id="createDeckForm">
             <div class="form-group">
                 <label class="form-label" for="createDeckName">Deck Name*</label>
-                <input id="createDeckName" class="form-input" type="text" required>
+                <input id="createDeckName" class="form-input" type="text" required />
             </div>
             <div class="form-group">
                 <label class="form-label" for="createDeckCode">Deck Code*</label>
-                <input id="createDeckCode" class="form-input" type="text" placeholder="BT16-064" required>
+                <input
+                    id="createDeckCode"
+                    class="form-input"
+                    type="text"
+                    placeholder="BT16-064"
+                    required
+                />
                 <div class="code-examples">
                     <div class="code-example" data-code="BT24-030">BT24-030</div>
                     <div class="code-example" data-code="ST22-05">ST22-05</div>
                     <div class="code-example" data-code="EX5-001">EX5-001</div>
                     <div class="code-example" data-code="P-183">P-183</div>
                 </div>
-                <div id="createDeckPreview" class="modal-preview" style="display: none;">
+                <div id="createDeckPreview" class="modal-preview" style="display: none">
                     <div class="deck-thumb-wrapper modal-preview-thumb">
-                        <img id="createDeckPreviewImage" class="deck-thumb-image" alt="Deck preview">
+                        <img
+                            id="createDeckPreviewImage"
+                            class="deck-thumb-image"
+                            alt="Deck preview"
+                        />
                     </div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button type="button" id="btnCloseCreateDeckModal" class="btn-modal-cancel">Cancel</button>
+                <button type="button" id="btnCloseCreateDeckModal" class="btn-modal-cancel">
+                    Cancel
+                </button>
                 <button type="submit" class="btn-modal-save">Create</button>
             </div>
 

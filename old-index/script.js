@@ -1,11 +1,12 @@
-const SUPABASE_URL = "https://vllqakohumoinpdwnsqa.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsbHFha29odW1vaW5wZHduc3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIwMTAsImV4cCI6MjA4NjE5ODAxMH0.uXSjwwM_RqeNWJwRQM8We9WEsWsz3C2JfdhlZXNoTKM";
-
-const headers = {
-    "apikey": SUPABASE_ANON_KEY,
-    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-    "Content-Type": "application/json"
-};
+const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || 'https://vllqakohumoinpdwnsqa.supabase.co';
+const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || '';
+const headers = window.createSupabaseHeaders
+    ? window.createSupabaseHeaders()
+    : {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+      };
 
 let currentStore = '';
 let currentDate = '';
@@ -14,12 +15,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearDisplay();
     await loadStores();
     setupEventListeners();
+    setupModalActionButtons();
 });
 
 function setupEventListeners() {
     const storeFilter = document.getElementById('storeFilter');
     const dateFilter = document.getElementById('dateFilter');
-    
+
     storeFilter.addEventListener('change', async (e) => {
         currentStore = e.target.value;
         if (currentStore) {
@@ -31,7 +33,7 @@ function setupEventListeners() {
             clearDisplay();
         }
     });
-    
+
     dateFilter.addEventListener('change', async (e) => {
         currentDate = e.target.value;
         if (currentDate) {
@@ -45,28 +47,32 @@ function setupEventListeners() {
 async function loadStores() {
     try {
         showLoading(true);
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*`, { 
-            headers,
-            method: 'GET'
-        });
-        
+        const res = window.supabaseApi
+            ? await window.supabaseApi.get('/rest/v1/stores?select=*')
+            : await fetch(`${SUPABASE_URL}/rest/v1/stores?select=*`, {
+                  headers,
+                  method: 'GET'
+              });
+
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
         }
-        
+
         const stores = await res.json();
-        const select = document.getElementById("storeFilter");
-        
+        const select = document.getElementById('storeFilter');
+
         select.innerHTML = '<option value="">Select store...</option>';
-        stores.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
-            const option = document.createElement('option');
-            option.value = s.id;
-            option.textContent = s.name;
-            select.appendChild(option);
-        });
+        stores
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .forEach((s) => {
+                const option = document.createElement('option');
+                option.value = s.id;
+                option.textContent = s.name;
+                select.appendChild(option);
+            });
         showLoading(false);
     } catch (err) {
-        console.error("Error loading stores:", err);
+        console.error('Error loading stores:', err);
         showError();
         showLoading(false);
     }
@@ -75,32 +81,36 @@ async function loadStores() {
 async function loadDatesForStore(storeId) {
     try {
         showLoading(true);
-        const res = await fetch(
-            `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${storeId}&select=tournament_date,total_players&order=tournament_date.desc`, 
-            { headers }
-        );
-        
+        const res = window.supabaseApi
+            ? await window.supabaseApi.get(
+                  `/rest/v1/tournament_results?store_id=eq.${storeId}&select=tournament_date,total_players&order=tournament_date.desc`
+              )
+            : await fetch(
+                  `${SUPABASE_URL}/rest/v1/tournament_results?store_id=eq.${storeId}&select=tournament_date,total_players&order=tournament_date.desc`,
+                  { headers }
+              );
+
         if (!res.ok) throw new Error('Error loading dates');
-        
+
         const data = await res.json();
-        const dates = [...new Set(data.map(item => item.tournament_date))];
-        
+        const dates = [...new Set(data.map((item) => item.tournament_date))];
+
         const select = document.getElementById('dateFilter');
         select.innerHTML = '<option value="">Select a date...</option>';
-        
-        dates.forEach(dateStr => {
+
+        dates.forEach((dateStr) => {
             const option = document.createElement('option');
             option.value = dateStr;
-            
+
             const [year, month, day] = dateStr.split('-');
             const formattedDate = `${day}/${month}/${year}`;
-            
+
             option.textContent = formattedDate;
             select.appendChild(option);
         });
         showLoading(false);
     } catch (err) {
-        console.error("Error loading dates:", err);
+        console.error('Error loading dates:', err);
         showError();
         showLoading(false);
     }
@@ -110,10 +120,14 @@ async function displayTournament() {
     try {
         showLoading(true);
 
-        const resultsRes = await fetch(
-            `${SUPABASE_URL}/rest/v1/v_podium_full?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&order=placement.asc`,
-            { headers }
-        );
+        const resultsRes = window.supabaseApi
+            ? await window.supabaseApi.get(
+                  `/rest/v1/v_podium_full?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&order=placement.asc`
+              )
+            : await fetch(
+                  `${SUPABASE_URL}/rest/v1/v_podium_full?store_id=eq.${currentStore}&tournament_date=eq.${currentDate}&order=placement.asc`,
+                  { headers }
+              );
 
         if (!resultsRes.ok) throw new Error('Error loading results');
 
@@ -154,9 +168,8 @@ async function displayTournament() {
         }
 
         showLoading(false);
-
     } catch (err) {
-        console.error("Error displaying tournament:", err);
+        console.error('Error displaying tournament:', err);
         showError();
         showLoading(false);
     }
@@ -172,7 +185,7 @@ function displayPodium(topFour) {
 
     positions.forEach((pos) => {
         const card = document.getElementById(pos.id);
-        const entry = topFour.find(e => e.placement === pos.placement);
+        const entry = topFour.find((e) => e.placement === pos.placement);
 
         if (entry) {
             const img = card.querySelector('.deck-card-image');
@@ -212,7 +225,7 @@ function displayPositions(results) {
     const container = document.getElementById('positionsList');
     container.innerHTML = '';
 
-    results.forEach(entry => {
+    results.forEach((entry) => {
         const div = document.createElement('div');
         div.className = 'position-item';
 
@@ -234,14 +247,14 @@ function displayPositions(results) {
 
 function clearDisplay() {
     document.getElementById('totalPlayers').textContent = '-';
-    
-    ['firstPlace', 'secondPlace', 'thirdPlace', 'fourthPlace'].forEach(id => {
+
+    ['firstPlace', 'secondPlace', 'thirdPlace', 'fourthPlace'].forEach((id) => {
         const card = document.getElementById(id);
         if (card) {
             const img = card.querySelector('.deck-card-image');
             const deckName = card.querySelector('.deck-name');
             const playerName = card.querySelector('.player-name');
-            
+
             img.src = '';
             img.alt = '';
             deckName.textContent = '-';
@@ -249,15 +262,15 @@ function clearDisplay() {
             card.style.display = 'none';
         }
     });
-    
+
     document.getElementById('positionsList').innerHTML = '';
-    
+
     // Ocultar seção de resultados completos quando não há dados
     const positionsSection = document.querySelector('.positions-section');
     if (positionsSection) {
         positionsSection.style.display = 'none';
     }
-    
+
     const generateSection = document.getElementById('generatePostSection');
     if (generateSection) {
         generateSection.style.display = 'none';
@@ -271,4 +284,20 @@ function showLoading(show) {
 
 function showError() {
     document.getElementById('errorMessage').style.display = 'block';
+}
+
+function setupModalActionButtons() {
+    const btnPostModalCloseTop = document.getElementById('btnPostModalCloseTop');
+    const btnPostDownload = document.getElementById('btnPostDownload');
+    const btnPostModalCloseBottom = document.getElementById('btnPostModalCloseBottom');
+
+    if (btnPostModalCloseTop) {
+        btnPostModalCloseTop.addEventListener('click', closePostPreview);
+    }
+    if (btnPostDownload) {
+        btnPostDownload.addEventListener('click', downloadPost);
+    }
+    if (btnPostModalCloseBottom) {
+        btnPostModalCloseBottom.addEventListener('click', closePostPreview);
+    }
 }

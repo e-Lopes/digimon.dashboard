@@ -1,36 +1,37 @@
 (() => {
     function escapeHtml(value) {
-        return String(value || "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     function getAssetPrefix() {
-        return window.location.pathname.includes("/torneios/list-tournaments/") ? "../../" : "";
+        return window.location.pathname.includes('/torneios/list-tournaments/') ? '../../' : '';
     }
 
     function normalizeStoreName(name) {
-        return String(name || "")
+        return String(name || '')
             .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "");
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
     }
 
     function resolveStoreIcon(storeName) {
         const base = `${getAssetPrefix()}icons/stores/`;
         const normalized = normalizeStoreName(storeName);
-        if (normalized.includes("gladiator")) return `${base}Gladiators.png`;
-        if (normalized.includes("meruru")) return `${base}Meruru.svg`;
-        if (normalized.includes("taverna")) return `${base}Taverna.png`;
-        if (normalized.includes("tcgbr") || normalized.includes("tcg br")) return `${base}TCGBR.png`;
+        if (normalized.includes('gladiator')) return `${base}Gladiators.png`;
+        if (normalized.includes('meruru')) return `${base}Meruru.svg`;
+        if (normalized.includes('taverna')) return `${base}Taverna.png`;
+        if (normalized.includes('tcgbr') || normalized.includes('tcg br'))
+            return `${base}TCGBR.png`;
         return `${base}images.png`;
     }
 
     function pad2(value) {
-        return String(value).padStart(2, "0");
+        return String(value).padStart(2, '0');
     }
 
     function toMonthKey(date) {
@@ -38,7 +39,9 @@
     }
 
     function getFirstOfMonth(monthKey) {
-        const [year, month] = String(monthKey || "").split("-").map(Number);
+        const [year, month] = String(monthKey || '')
+            .split('-')
+            .map(Number);
         if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
             const now = new Date();
             return new Date(now.getFullYear(), now.getMonth(), 1);
@@ -59,20 +62,20 @@
         const map = new Map();
         const keyPrefix = `${monthKey}-`;
         (tournaments || []).forEach((t) => {
-            const dateStr = String(t.tournament_date || "");
+            const dateStr = String(t.tournament_date || '');
             if (!dateStr.startsWith(keyPrefix)) return;
             const day = Number(dateStr.slice(8, 10));
             if (!Number.isInteger(day) || day < 1 || day > 31) return;
             if (!map.has(day)) map.set(day, []);
-            const storeName = (t.store && t.store.name) ? String(t.store.name).trim() : "Store";
-            const tournamentName = String(t.tournament_name || "Tournament");
+            const storeName = t.store && t.store.name ? String(t.store.name).trim() : 'Store';
+            const tournamentName = String(t.tournament_name || 'Tournament');
             map.get(day).push({
-                id: t.id || "",
-                storeId: t.store_id || "",
+                id: t.id || '',
+                storeId: t.store_id || '',
                 storeName,
                 tournamentName,
                 tournamentDate: dateStr,
-                totalPlayers: t.total_players || ""
+                totalPlayers: t.total_players || ''
             });
         });
         return map;
@@ -89,7 +92,7 @@
         const startWeekDay = firstDay.getDay();
         const totalDays = new Date(year, month + 1, 0).getDate();
         const dayStoreMap = buildDayStoreMap(tournaments, monthKey);
-        const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
         const dayCells = [];
         for (let i = 0; i < startWeekDay; i++) {
@@ -98,7 +101,7 @@
 
         for (let day = 1; day <= totalDays; day++) {
             const entries = dayStoreMap.get(day) || [];
-            let eventsHtml = "";
+            let eventsHtml = '';
             if (entries.length === 1) {
                 const item = entries[0];
                 const safeStore = escapeHtml(item.storeName);
@@ -121,10 +124,11 @@
                     const key = normalizeStoreName(item.storeName);
                     if (!storeMap.has(key)) storeMap.set(key, item);
                 });
-                eventsHtml = Array.from(storeMap.values()).map((item) => {
-                    const safeStore = escapeHtml(item.storeName);
-                    const icon = resolveStoreIcon(item.storeName);
-                    return `
+                eventsHtml = Array.from(storeMap.values())
+                    .map((item) => {
+                        const safeStore = escapeHtml(item.storeName);
+                        const icon = resolveStoreIcon(item.storeName);
+                        return `
                         <div class="calendar-event"
                              data-event-payload="${encodeURIComponent(JSON.stringify(item))}"
                              title="${safeStore}">
@@ -134,10 +138,11 @@
                             </div>
                         </div>
                     `;
-                }).join("");
+                    })
+                    .join('');
             }
             dayCells.push(`
-                <div class="calendar-day ${entries.length ? "has-events" : ""} is-clickable" data-day-date="${monthKey}-${pad2(day)}">
+                <div class="calendar-day ${entries.length ? 'has-events' : ''} is-clickable" data-day-date="${monthKey}-${pad2(day)}">
                     <div class="calendar-day-number">${day}</div>
                     <div class="calendar-events">${eventsHtml}</div>
                 </div>
@@ -150,17 +155,17 @@
 
         return `
             <div class="calendar-weekdays">
-                ${weekDays.map((label) => `<div>${label}</div>`).join("")}
+                ${weekDays.map((label) => `<div>${label}</div>`).join('')}
             </div>
             <div class="calendar-grid">
-                ${dayCells.join("")}
+                ${dayCells.join('')}
             </div>
         `;
     }
 
     function render(container, options) {
         if (!container) return;
-        const monthKey = options?.monthKey || "";
+        const monthKey = options?.monthKey || '';
         const monthNames = options?.monthNames || [];
         const tournaments = options?.tournaments || [];
         const onPrev = options?.onPrev;
@@ -177,46 +182,50 @@
         container.innerHTML = `
             <div class="calendar-panel">
                 <div class="calendar-toolbar">
-                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month" ${hasPrevMonth ? "" : "disabled"}><</button>
+                    <button type="button" class="calendar-nav-btn" id="calendarPrevBtn" aria-label="Previous month" ${hasPrevMonth ? '' : 'disabled'}><</button>
                     <div class="calendar-title-wrap">
-                        <strong class="calendar-title">${monthKey ? getMonthLabel(monthKey, monthNames) : "-"}</strong>
+                        <strong class="calendar-title">${monthKey ? getMonthLabel(monthKey, monthNames) : '-'}</strong>
                     </div>
-                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month" ${hasNextMonth ? "" : "disabled"}>></button>
+                    <button type="button" class="calendar-nav-btn" id="calendarNextBtn" aria-label="Next month" ${hasNextMonth ? '' : 'disabled'}>></button>
                 </div>
                 <div class="calendar-year-nav">
-                    <button type="button" class="calendar-nav-btn" id="calendarPrevYearBtn" aria-label="Previous year" ${hasPrevYear ? "" : "disabled"}><</button>
-                    <span class="calendar-year-nav-label">${monthKey ? getYearLabel(monthKey) : ""}</span>
-                    <button type="button" class="calendar-nav-btn" id="calendarNextYearBtn" aria-label="Next year" ${hasNextYear ? "" : "disabled"}>></button>
+                    <button type="button" class="calendar-nav-btn" id="calendarPrevYearBtn" aria-label="Previous year" ${hasPrevYear ? '' : 'disabled'}><</button>
+                    <span class="calendar-year-nav-label">${monthKey ? getYearLabel(monthKey) : ''}</span>
+                    <button type="button" class="calendar-nav-btn" id="calendarNextYearBtn" aria-label="Next year" ${hasNextYear ? '' : 'disabled'}>></button>
                 </div>
                 ${buildCalendarContent(monthKey, tournaments)}
             </div>
         `;
 
-        const prevBtn = container.querySelector("#calendarPrevBtn");
-        const nextBtn = container.querySelector("#calendarNextBtn");
-        const prevYearBtn = container.querySelector("#calendarPrevYearBtn");
-        const nextYearBtn = container.querySelector("#calendarNextYearBtn");
-        const eventEls = container.querySelectorAll(".calendar-event[data-event-payload]");
-        const dayEls = container.querySelectorAll(".calendar-day[data-day-date]");
-        if (prevBtn && typeof onPrev === "function") prevBtn.addEventListener("click", onPrev);
-        if (nextBtn && typeof onNext === "function") nextBtn.addEventListener("click", onNext);
-        if (prevYearBtn && typeof onPrevYear === "function") prevYearBtn.addEventListener("click", onPrevYear);
-        if (nextYearBtn && typeof onNextYear === "function") nextYearBtn.addEventListener("click", onNextYear);
-        if (typeof onSelectEvent === "function") {
+        const prevBtn = container.querySelector('#calendarPrevBtn');
+        const nextBtn = container.querySelector('#calendarNextBtn');
+        const prevYearBtn = container.querySelector('#calendarPrevYearBtn');
+        const nextYearBtn = container.querySelector('#calendarNextYearBtn');
+        const eventEls = container.querySelectorAll('.calendar-event[data-event-payload]');
+        const dayEls = container.querySelectorAll('.calendar-day[data-day-date]');
+        if (prevBtn && typeof onPrev === 'function') prevBtn.addEventListener('click', onPrev);
+        if (nextBtn && typeof onNext === 'function') nextBtn.addEventListener('click', onNext);
+        if (prevYearBtn && typeof onPrevYear === 'function')
+            prevYearBtn.addEventListener('click', onPrevYear);
+        if (nextYearBtn && typeof onNextYear === 'function')
+            nextYearBtn.addEventListener('click', onNextYear);
+        if (typeof onSelectEvent === 'function') {
             eventEls.forEach((el) => {
-                el.addEventListener("click", (e) => {
+                el.addEventListener('click', (e) => {
                     e.stopPropagation();
                     try {
-                        const payload = JSON.parse(decodeURIComponent(el.dataset.eventPayload || ""));
+                        const payload = JSON.parse(
+                            decodeURIComponent(el.dataset.eventPayload || '')
+                        );
                         onSelectEvent(payload);
                     } catch (_) {}
                 });
             });
         }
-        if (typeof onSelectDay === "function") {
+        if (typeof onSelectDay === 'function') {
             dayEls.forEach((el) => {
-                el.addEventListener("click", () => {
-                    const date = el.dataset.dayDate || "";
+                el.addEventListener('click', () => {
+                    const date = el.dataset.dayDate || '';
                     if (date) onSelectDay(date);
                 });
             });
