@@ -652,7 +652,12 @@ function renderTable() {
 
         const td1 = document.createElement('td');
         td1.setAttribute('data-label', 'Data:');
-        td1.textContent = formatDate(t.tournament_date);
+        td1.classList.add('table-date-cell');
+        const formattedDate = formatDate(t.tournament_date);
+        const dateValue = document.createElement('span');
+        dateValue.className = 'table-date-value';
+        dateValue.textContent = formattedDate;
+        td1.appendChild(dateValue);
 
         const td2 = document.createElement('td');
         td2.setAttribute('data-label', 'Loja:');
@@ -665,6 +670,7 @@ function renderTable() {
         storeIcon.src = resolveStoreIcon(storeName);
         storeIcon.alt = storeName;
         const storeText = document.createElement('span');
+        storeText.className = 'table-store-name';
         storeText.textContent = storeName;
         storeContent.appendChild(storeIcon);
         storeContent.appendChild(storeText);
@@ -672,11 +678,32 @@ function renderTable() {
 
         const td3 = document.createElement('td');
         td3.setAttribute('data-label', 'Nome:');
-        td3.textContent = t.tournament_name || '-';
+        td3.classList.add('table-name-cell');
+        const tournamentName = t.tournament_name || '-';
+        const tournamentNameText = document.createElement('span');
+        tournamentNameText.className = 'table-tournament-name';
+        tournamentNameText.textContent = tournamentName;
+        const mobileStoreTournament = document.createElement('span');
+        mobileStoreTournament.className = 'table-mobile-store-tournament';
+        mobileStoreTournament.textContent = `${storeName} - ${tournamentName}`;
+        td3.appendChild(tournamentNameText);
+        td3.appendChild(mobileStoreTournament);
 
         const td4 = document.createElement('td');
         td4.setAttribute('data-label', 'Players:');
-        td4.textContent = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : '-';
+        td4.classList.add('table-players-cell');
+        const playersValue = Number.isFinite(Number(t.total_players)) ? String(t.total_players) : '-';
+        const playersValueText = document.createElement('span');
+        playersValueText.className = 'table-players-value';
+        playersValueText.textContent = playersValue;
+        const mobilePlayersLine = document.createElement('span');
+        mobilePlayersLine.className = 'table-mobile-players-line';
+        mobilePlayersLine.innerHTML =
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11a4 4 0 1 0-3.999-4A4 4 0 0 0 16 11Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Zm-8 1c-2.33 0-7 1.17-7 3.5V19h5v-2c0-1.16.7-2.18 1.89-3Z"></path></svg><span></span>';
+        const mobilePlayersText = mobilePlayersLine.querySelector('span');
+        if (mobilePlayersText) mobilePlayersText.textContent = `Players: ${playersValue}`;
+        td4.appendChild(playersValueText);
+        td4.appendChild(mobilePlayersLine);
 
         const td5 = document.createElement('td');
         td5.setAttribute('data-label', 'Instagram:');

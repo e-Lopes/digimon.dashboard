@@ -1326,6 +1326,11 @@ th {
     gap: 6px;
 }
 
+.table-mobile-store-tournament,
+.table-mobile-players-line {
+    display: none;
+}
+
 .th-with-icon {
     display: inline-flex;
     align-items: center;
@@ -2364,13 +2369,14 @@ th {
         background: white;
         border: 1px solid #ddd;
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 10px 64px 10px 86px;
+        min-height: 84px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     #tournamentsTable td {
         display: block;
-        padding: 5px 0;
+        padding: 2px 0;
         border: none;
         text-align: left;
         word-break: break-word;
@@ -2394,34 +2400,90 @@ th {
     }
 
     #tournamentsTable td:before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: #667eea;
-        display: inline-block;
-        margin-right: 6px;
-        min-width: 66px;
+        content: none;
+        display: none;
     }
 
-    #tournamentsTable td:nth-child(-n + 4) {
-        padding-right: 96px;
+    #tournamentsTable td:nth-child(2) {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 62px;
+        height: 62px;
+        padding: 0;
+        margin: 0;
+    }
+
+    #tournamentsTable td:nth-child(2) .table-store-content {
+        width: 62px;
+        height: 62px;
+        border-radius: 14px;
+        border: 1px solid #dbe2ff;
+        background: #f4f6ff;
+        justify-content: center;
+    }
+
+    #tournamentsTable td:nth-child(2) .table-store-icon {
+        width: 46px;
+        height: 46px;
+        margin: 0;
+    }
+
+    #tournamentsTable td:nth-child(2) .table-store-name {
+        display: none;
+    }
+
+    #tournamentsTable td:nth-child(1) .table-date-value {
+        font-weight: 800;
+        color: #1e2a63;
+        font-size: 0.98rem;
+    }
+
+    #tournamentsTable td:nth-child(3) .table-tournament-name,
+    #tournamentsTable td:nth-child(4) .table-players-value {
+        display: none;
+    }
+
+    #tournamentsTable td:nth-child(3) .table-mobile-store-tournament {
+        display: block;
+        color: #2f365c;
+        font-size: 0.9rem;
+        line-height: 1.2;
+        overflow-wrap: anywhere;
+    }
+
+    #tournamentsTable td:nth-child(4) .table-mobile-players-line {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #49507a;
+        font-weight: 600;
+        font-size: 0.84rem;
+    }
+
+    #tournamentsTable td:nth-child(4) .table-mobile-players-line svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
     }
 
     #tournamentsTable td:nth-child(5),
     #tournamentsTable td:nth-child(6) {
         position: absolute;
-        top: 10px;
-        width: 40px;
+        right: 12px;
+        width: 34px;
         padding: 0;
         margin: 0;
         text-align: center;
     }
 
     #tournamentsTable td:nth-child(5) {
-        right: 56px;
+        top: 46px;
     }
 
     #tournamentsTable td:nth-child(6) {
-        right: 12px;
+        top: 8px;
     }
 
     #tournamentsTable td:nth-child(5):before,
@@ -2433,6 +2495,15 @@ th {
     #tournamentsTable td:nth-child(5) .btn-instagram,
     #tournamentsTable td:nth-child(6) .btn-edit.btn-icon-only {
         margin: 0;
+        width: 34px;
+        height: 34px;
+        border-radius: 6px;
+    }
+
+    #tournamentsTable td:nth-child(5) .btn-instagram svg,
+    #tournamentsTable td:nth-child(6) .btn-edit.btn-icon-only svg {
+        width: 16px;
+        height: 16px;
     }
 
     .filters-row {
