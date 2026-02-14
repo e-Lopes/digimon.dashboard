@@ -1064,7 +1064,7 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
                           `https://via.placeholder.com/200x200/667eea/ffffff?text=${encodeURIComponent((item.deck || 'Deck').substring(0, 10))}`;
                       return `
                 <div class="details-podium-card ${placementClass(Number(item.placement))}">
-                    <div class="details-rank-badge">${item.placement}Âº</div>
+                    <div class="details-rank-badge">${item.placement}º</div>
                     <div class="details-deck-card-footer">
                         <div class="details-player-name">${item.player || '-'}</div>
                         <div class="details-deck-name">${item.deck || '-'}</div>
@@ -1112,7 +1112,7 @@ async function renderTournamentDetails(tournament, targetContainer = null) {
                   .map(
                       (item) => `
                 <div class="results-mini-item">
-                    <div class="results-mini-rank">${item.placement}Âº</div>
+                    <div class="results-mini-rank">${item.placement}º</div>
                     <div class="results-mini-main">
                         <strong>${item.deck || '-'}</strong>
                         <span>${item.player || '-'}</span>
@@ -1396,3 +1396,4 @@ async function createTournamentFormSubmit(e) {
         submitBtn.textContent = originalText;
     }
 }
+
