@@ -754,6 +754,7 @@ h1 {
 /* Remove setas do input number */
 .form-group input[type="number"] {
 	-moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .form-group input[type="number"]::-webkit-outer-spin-button,
@@ -1215,6 +1216,7 @@ h1 {
 /* Ajuste para o campo de Número (Total Players) */
 .form-group input[type="number"] {
     -moz-appearance: textfield; /* Remove as setinhas no Firefox */
+    appearance: textfield;
 }
 
 .form-group input[type="number"]::-webkit-outer-spin-button,
@@ -1862,6 +1864,7 @@ th {
 
 .form-group input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .form-group input[type="number"]::-webkit-outer-spin-button,
@@ -3035,6 +3038,7 @@ body {
 
 .form-input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .form-input[type="number"]::-webkit-outer-spin-button,
@@ -3357,7 +3361,8 @@ input[type="text"]:focus {
     padding: 0 30px;
     font-weight: 700;
     cursor: pointer;
-    white-space: nowrap;`r`n    gap: 6px;
+    white-space: nowrap;
+    gap: 6px;
     line-height: 1; /* Garante centralizaÃ§Ã£o da fonte */
 }
 
@@ -3461,7 +3466,8 @@ input[type="text"]:focus {
     display: flex;
     align-items: center;
     gap: 5px;
-    white-space: nowrap;`r`n    gap: 6px;
+    white-space: nowrap;
+    gap: 6px;
 }
 
 .btn-action:hover {
@@ -4030,20 +4036,6 @@ h1 {
     color: white;
 }
 
-Agora sim ficou bem melhor 👏🔥
-Mas dá pra deixar nível produto profissional mesmo com dois ajustes finos:
-
-O azul do rank está brigando com as cores do fundo (principalmente no 1º e 3º).
-
-O deck poderia ter ainda mais destaque visual.
-
-Vou te passar o upgrade final.
-
-🎯 1️⃣ Deixar o rank combinando com cada posição
-
-Em vez do círculo azul fixo, vamos usar a cor da colocação.
-
-Substitua .position-rank por:
 .position-rank {
     font-weight: bold;
     font-size: 0.95rem;
@@ -4914,10 +4906,6 @@ Substitua .position-rank por:
     background: #e0e7ff;
     border-color: #667eea;
     transform: translateY(-2px);
-}
-
-
-
 }
 
 /* ============================================================
