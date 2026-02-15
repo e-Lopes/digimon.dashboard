@@ -53,6 +53,9 @@ let createResults = [];
 let selectedTournamentId = null;
 let currentViewMode = getSavedViewMode();
 let calendarMonthKey = '';
+let currentDashboardView = 'tournaments';
+let decksViewMounted = false;
+let decksScriptsPromise = null;
 
 // ============================================================
 // FORMAT DATE FUNCTION
@@ -148,6 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupPerPageSelector();
     setupViewToggle();
     bindStaticActions();
+    setupDashboardViewSwitching();
     await loadTournaments();
     setupFilters();
     setupSorting();
@@ -492,6 +496,171 @@ function updateToggleViewButton() {
     `;
     button.title = 'Switch to calendar';
     button.setAttribute('aria-label', 'Switch to calendar');
+}
+
+function setupDashboardViewSwitching() {
+    const btnShowTournamentsNav = document.getElementById('btnShowTournamentsNav');
+    const btnManageDecksNav = document.getElementById('btnManageDecksNav');
+
+    if (!btnShowTournamentsNav && !btnManageDecksNav) return;
+
+    if (btnShowTournamentsNav) {
+        btnShowTournamentsNav.addEventListener('click', () => {
+            switchDashboardView('tournaments');
+        });
+    }
+
+    if (btnManageDecksNav) {
+        btnManageDecksNav.addEventListener('click', () => {
+            switchDashboardView('decks');
+        });
+    }
+
+    updateDashboardViewUi();
+}
+
+async function switchDashboardView(view) {
+    if (view !== 'tournaments' && view !== 'decks') return;
+    if (currentDashboardView === view) return;
+
+    currentDashboardView = view;
+    updateDashboardViewUi();
+
+    if (view === 'decks') {
+        try {
+            await ensureDecksViewReady();
+            if (typeof window.initDecksPage === 'function') {
+                window.initDecksPage();
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Unable to load decks view right now.');
+            currentDashboardView = 'tournaments';
+            updateDashboardViewUi();
+        }
+    }
+}
+
+function updateDashboardViewUi() {
+    const isDecks = currentDashboardView === 'decks';
+    const filtersRow = document.querySelector('.filters-row');
+    const decksContainer = document.getElementById('decksDynamicContainer');
+    const btnShowTournamentsNav = document.getElementById('btnShowTournamentsNav');
+    const btnManageDecksNav = document.getElementById('btnManageDecksNav');
+
+    if (filtersRow) filtersRow.classList.toggle('is-hidden', isDecks);
+    if (decksContainer) decksContainer.classList.toggle('is-hidden', !isDecks);
+
+    if (btnShowTournamentsNav) {
+        btnShowTournamentsNav.classList.toggle('is-active', !isDecks);
+        btnShowTournamentsNav.disabled = !isDecks;
+        btnShowTournamentsNav.setAttribute('aria-pressed', String(!isDecks));
+    }
+    if (btnManageDecksNav) {
+        btnManageDecksNav.classList.toggle('is-active', isDecks);
+        btnManageDecksNav.disabled = isDecks;
+        btnManageDecksNav.setAttribute('aria-pressed', String(isDecks));
+    }
+
+    if (!isDecks) {
+        renderCurrentView();
+        return;
+    }
+
+    const listContainer = document.getElementById('listViewContainer');
+    const calendarContainer = document.getElementById('calendarViewContainer');
+    const calendarDetails = document.getElementById('calendarTournamentDetails');
+    if (listContainer) listContainer.classList.add('is-hidden');
+    if (calendarContainer) calendarContainer.classList.add('is-hidden');
+    if (calendarDetails) calendarDetails.classList.add('is-hidden');
+}
+
+async function ensureDecksViewReady() {
+    await mountDecksContainer();
+    await loadDecksAssets();
+}
+
+async function mountDecksContainer() {
+    if (decksViewMounted) return;
+
+    const host = document.getElementById('decksDynamicContainer');
+    if (!host) return;
+
+    let embedded = null;
+    const localTemplate = document.getElementById('decksContainerTemplate');
+    if (localTemplate?.content?.firstElementChild) {
+        embedded = localTemplate.content.firstElementChild.cloneNode(true);
+    } else {
+        const prefix = getAssetPrefix();
+        const response = await fetch(`${prefix}decks/index.html`, { method: 'GET' });
+        if (!response.ok) {
+            throw new Error(`Failed to load decks markup (${response.status})`);
+        }
+
+        const pageHtml = await response.text();
+        const parsed = new DOMParser().parseFromString(pageHtml, 'text/html');
+        const decksContainer = parsed.querySelector('.decks-container');
+        if (!decksContainer) {
+            throw new Error('Decks container not found in decks/index.html');
+        }
+        embedded = decksContainer.cloneNode(true);
+        const topNav = embedded.querySelector('.top-nav');
+        if (topNav) topNav.remove();
+    }
+
+    host.innerHTML = '';
+    if (embedded) {
+        embedded.classList.add('embedded-decks-view');
+        host.appendChild(embedded);
+    }
+
+    if (!host.querySelector('#createDeckModalHost')) {
+        const createHost = document.createElement('div');
+        createHost.id = 'createDeckModalHost';
+        host.appendChild(createHost);
+    }
+    if (!host.querySelector('#editDeckModalHost')) {
+        const editHost = document.createElement('div');
+        editHost.id = 'editDeckModalHost';
+        host.appendChild(editHost);
+    }
+
+    decksViewMounted = true;
+}
+
+async function loadDecksAssets() {
+    if (decksScriptsPromise) return decksScriptsPromise;
+
+    const prefix = getAssetPrefix();
+    const scriptPaths = [
+        `${prefix}decks/create-deck/modal.js`,
+        `${prefix}decks/edit-deck/modal.js`,
+        `${prefix}decks/page.js`
+    ];
+
+    decksScriptsPromise = scriptPaths.reduce(
+        (chain, src) => chain.then(() => loadScriptOnce(src)),
+        Promise.resolve()
+    );
+
+    return decksScriptsPromise;
+}
+
+function loadScriptOnce(src) {
+    const absoluteSrc = new URL(src, window.location.href).href;
+    const existing = Array.from(document.querySelectorAll('script')).find((script) => {
+        return script.src === absoluteSrc;
+    });
+
+    if (existing) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+        document.body.appendChild(script);
+    });
 }
 
 function renderCalendarView() {

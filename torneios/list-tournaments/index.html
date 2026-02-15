@@ -12,16 +12,18 @@
     </head>
     <body>
         <div class="container">
-            <div class="u-mb-20">
-                <button id="btnCreateTournament" class="nav-button">
-                    <span>+</span>
-                    <span>Create Tournament</span>
-                </button>
-            </div>
-
             <h1>Tournaments List</h1>
 
             <div class="filters-row">
+                <button
+                    type="button"
+                    id="btnCreateTournament"
+                    class="btn-create-filter"
+                    title="Create Tournament"
+                    aria-label="Create Tournament"
+                >
+                    Create
+                </button>
                 <div class="form-group filter-group">
                     <label for="filterStore">Store</label>
                     <select id="filterStore" class="filter-select">
