@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="styles.css" />
         <link rel="stylesheet" href="styles/components/utilities.css" />
         <link rel="stylesheet" href="styles/components/states.css" />
+        <link rel="stylesheet" href="styles/pages/players.css" />
     </head>
     <body>
         <div class="container">
@@ -37,12 +38,17 @@
                         </span>
                         <span>Decks</span>
                     </button>
-                    <a href="players/index.html" class="nav-button">
-                        <span>Manage Players</span>
-                    </a>
-                    <a href="teste/index.html" class="nav-button">
-                        <span>Post Generator</span>
-                    </a>
+                    <button type="button" id="btnManagePlayersNav" class="nav-button">
+                        <span class="nav-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="9" cy="8" r="3"></circle>
+                                <path d="M4 18c0-2.8 2.2-5 5-5s5 2.2 5 5"></path>
+                                <circle cx="17" cy="10" r="2"></circle>
+                                <path d="M15.2 18c.3-1.9 1.8-3.4 3.8-3.8"></path>
+                            </svg>
+                        </span>
+                        <span>Players</span>
+                    </button>
                 </div>
             </header>
 
@@ -64,7 +70,7 @@
                     >
                         <path d="M12 5v14M5 12h14" />
                     </svg>
-                    Create
+                    Add
                 </button>
                 <div class="form-group filter-group">
                     <label for="filterStore">Store</label>
@@ -256,6 +262,7 @@
             <div id="calendarViewContainer" class="calendar-view-container is-hidden"></div>
             <div id="calendarTournamentDetails" class="calendar-tournament-details is-hidden"></div>
             <div id="decksDynamicContainer" class="is-hidden"></div>
+            <div id="playersDynamicContainer" class="is-hidden"></div>
 
             <template id="decksContainerTemplate">
                 <div class="decks-container">
@@ -274,7 +281,7 @@
                                 >
                                     <path d="M12 5v14M5 12h14" />
                                 </svg>
-                                Create
+                                Add
                             </button>
                         </div>
                     </div>
@@ -342,6 +349,63 @@
                     <div class="pagination" id="decksPagination"></div>
                 </div>
             </template>
+
+            <template id="playersContainerTemplate">
+                <div class="players-container-embedded">
+                    <div class="page-header players-header">
+                        <div class="header-actions">
+                            <div class="stats-counter">Total: <span id="totalPlayersCount">0</span></div>
+                            <button type="button" id="submitBtn" class="btn-primary players-add-btn">
+                                <svg class="btn-create-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                    <path d="M12 5v14M5 12h14"></path>
+                                </svg>
+                                <span>Add</span>
+                            </button>
+                            <input
+                                type="text"
+                                id="playerName"
+                                class="players-name-input"
+                                placeholder="Enter player name..."
+                                autocomplete="off"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="search-container">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            class="search-input"
+                            placeholder="Search players by name..."
+                        />
+                        <select
+                            id="pageSizeSelect"
+                            class="page-size-select"
+                            title="Items per page"
+                            aria-label="Items per page"
+                        >
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+
+                    <div id="playersList" class="players-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="pagination" id="playersPagination"></div>
+
+                    <div id="emptyState" class="empty-state u-hidden">
+                        <p>No players found.</p>
+                    </div>
+                </div>
+            </template>
         </div>
 
         <div id="createModal" class="modal-overlay">
@@ -370,6 +434,10 @@
                             <option value="Regulation Battle">Regulation Battle</option>
                             <option value="For Fun">For Fun</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Format</label>
+                        <input type="text" id="createTournamentFormat" placeholder="Ex: BT20 / EVO Cup" />
                     </div>
                     <div class="form-group">
                         <label>Total Players<span class="required">*</span></label>
@@ -436,6 +504,10 @@
                             <option value="Regulation Battle">Regulation Battle</option>
                             <option value="For Fun">For Fun</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Format</label>
+                        <input type="text" id="editTournamentFormat" placeholder="Ex: BT20 / EVO Cup" />
                     </div>
                     <div class="form-group">
                         <label>Total Players<span class="required">*</span></label>

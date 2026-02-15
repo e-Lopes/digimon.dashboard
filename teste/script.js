@@ -882,13 +882,14 @@ function bootPostPreviewPageIfNeeded() {
     if (isTemplateEditorPage() || !isPostPreviewPage()) return;
     enableDedicatedPostPreviewLayout();
     try {
+        const stateFromUrl = getPostPreviewStateFromUrl();
         const raw = localStorage.getItem(POST_PREVIEW_STATE_KEY);
-        if (!raw) {
+        const state = stateFromUrl || (raw ? JSON.parse(raw) : null);
+        if (!state) {
             alert('No preview session found. Load a tournament first.');
             window.location.href = './index.html';
             return;
         }
-        const state = JSON.parse(raw);
         if (state?.selectedBackgroundPath) {
             selectedBackgroundPath = state.selectedBackgroundPath;
             initializeBackgroundSelector(selectedBackgroundPath);
@@ -907,6 +908,17 @@ function bootPostPreviewPageIfNeeded() {
     } catch (_) {
         alert('Invalid preview session.');
         window.location.href = './index.html';
+    }
+}
+
+function getPostPreviewStateFromUrl() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('previewData');
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (_) {
+        return null;
     }
 }
 

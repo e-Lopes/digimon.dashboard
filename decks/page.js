@@ -21,6 +21,17 @@ let pageSize = getInitialPageSize();
 let currentSearchTerm = '';
 let decksPageInitialized = false;
 
+function getDeckNameForDisplay(name) {
+    const text = String(name || '');
+    if (currentView === 'grid' && window.innerWidth > MOBILE_VIEW_BREAKPOINT) {
+        const maxChars = 28;
+        if (text.length > maxChars) {
+            return `${text.slice(0, maxChars - 1).trimEnd()}…`;
+        }
+    }
+    return text;
+}
+
 function initDecksPage() {
     if (decksPageInitialized) return;
 
@@ -51,6 +62,9 @@ function initDecksPage() {
 }
 
 window.initDecksPage = initDecksPage;
+window.resetDecksPage = function resetDecksPage() {
+    decksPageInitialized = false;
+};
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initDecksPage);
@@ -377,6 +391,7 @@ function displayDecks(decks, imagesMap, isFiltered = false) {
             'https://via.placeholder.com/300x220/667eea/ffffff?text=' +
             encodeURIComponent(deck.name.substring(0, 12));
         const deckCode = extractCodeFromUrl(imageUrl);
+        const deckNameDisplay = getDeckNameForDisplay(deck.name);
 
         const deckCard = document.createElement('div');
         deckCard.className = 'deck-row';
@@ -387,7 +402,7 @@ function displayDecks(decks, imagesMap, isFiltered = false) {
                              class="deck-thumb-image">
                     </div>
                     <div class="deck-info">
-                        <h3 class="deck-name">${deck.name}</h3>
+                        <h3 class="deck-name" title="${escapeHtmlAttribute(deck.name)}">${escapeHtmlAttribute(deckNameDisplay)}</h3>
                         ${deckCode ? `<div class="deck-code">${deckCode}</div>` : ''}
                     </div>
                     <div class="deck-actions">
